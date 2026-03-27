@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BitcoinSaveMe v2.3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#09090e;--bg2:#0f1018;--bg3:#14161f;--card:#111420;
+  --border:#1c2035;--border2:#252a3d;
+  --accent:#f0b429;--accent2:#ff6b2b;--btc:#f7931a;
+  --green:#22c55e;--red:#ef4444;--blue:#60a5fa;--purple:#a78bfa;
+  --text:#e9ecf5;--text2:#8891ab;--text3:#4e5470;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.5;min-height:100vh;overflow-x:hidden}
+.bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(247,147,26,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(247,147,26,.03) 1px,transparent 1px);background-size:72px 72px}
+.orb{position:fixed;pointer-events:none;z-index:0;border-radius:50%}
+.orb1{width:700px;height:700px;top:-250px;right:-200px;background:radial-gradient(circle,rgba(247,147,26,.08) 0%,transparent 65%)}
+.orb2{width:500px;height:500px;bottom:-150px;left:-100px;background:radial-gradient(circle,rgba(96,165,250,.04) 0%,transparent 65%)}
+.shell{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:36px 24px 100px}
+.hdr{display:flex;align-items:center;gap:14px;margin-bottom:32px;flex-wrap:wrap}
+.btc-logo{width:50px;height:50px;flex-shrink:0;filter:drop-shadow(0 0 16px rgba(247,147,26,.5))}
+.logo-t{font-family:'Bebas Neue';font-size:32px;letter-spacing:2px;background:linear-gradient(135deg,var(--btc),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-s{font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:-3px}
+.hdr-r{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.badge{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--text2);font-family:'DM Mono';white-space:nowrap}
+.mode-bar{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:14px;padding:5px;margin-bottom:22px;flex-wrap:wrap}
+.mbtn{flex:1;min-width:120px;padding:9px 14px;border-radius:10px;border:none;font-family:'DM Sans';font-size:13px;font-weight:600;cursor:pointer;transition:all .25s;color:var(--text2);background:transparent;display:flex;align-items:center;justify-content:center;gap:7px}
+.mbtn.on{background:var(--card);color:var(--text);border:1px solid var(--border2);box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.mbadge{font-size:10px;padding:2px 7px;border-radius:10px;font-family:'DM Mono'}
+.mbtn.on .mbadge{background:var(--btc);color:#000}
+.mbtn:not(.on) .mbadge{background:var(--border2);color:var(--text3)}
+.mdesc{font-size:12px;color:var(--text3);padding:0 4px;flex:1;text-align:right;min-width:100px}
+.prog{display:flex;align-items:center;gap:6px;margin-bottom:30px}
+.pseg{height:3px;flex:1;border-radius:2px;background:var(--border);transition:background .4s}
+.pseg.done{background:var(--green)}.pseg.cur{background:var(--btc)}
+.plbl{font-family:'DM Mono';font-size:11px;color:var(--text3);white-space:nowrap;margin-left:4px}
+.step{display:none}.step.on{display:block;animation:rise .3s ease}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.stitle{font-family:'Bebas Neue';font-size:clamp(36px,8vw,48px);letter-spacing:2px;line-height:1;background:linear-gradient(100deg,var(--text) 60%,var(--text2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.ssub{font-size:14px;color:var(--text2);margin-bottom:22px;max-width:580px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px 24px;margin-bottom:12px;transition:border-color .2s}
+.card:hover{border-color:var(--border2)}
+.chd{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:'DM Mono';display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.pip{width:5px;height:5px;border-radius:50%;background:var(--btc);flex-shrink:0}
+.c-btc-card{background:linear-gradient(135deg,rgba(247,147,26,.07),rgba(247,147,26,.02));border-color:rgba(247,147,26,.22)}
+.c-blue-card{background:linear-gradient(135deg,rgba(96,165,250,.06),rgba(96,165,250,.01));border-color:rgba(96,165,250,.18)}
+.c-green-card{background:linear-gradient(135deg,rgba(34,197,94,.06),rgba(34,197,94,.01));border-color:rgba(34,197,94,.18)}
+.c-purple-card{background:linear-gradient(135deg,rgba(167,139,250,.07),rgba(167,139,250,.02));border-color:rgba(167,139,250,.2)}
+.c-red-card{background:linear-gradient(135deg,rgba(239,68,68,.07),rgba(239,68,68,.02));border-color:rgba(239,68,68,.22)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+@media(max-width:600px){.g2,.g3{grid-template-columns:1fr}}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);font-weight:600}
+.f .hint{font-size:11px;color:var(--text3);line-height:1.4}
+.iw{position:relative}
+.iw .pfx,.iw .sfx{position:absolute;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);pointer-events:none}
+.iw .pfx{left:13px}.iw .sfx{right:13px}
+input,select{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'DM Sans';font-size:15px;font-weight:500;padding:11px 14px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--btc);box-shadow:0 0 0 3px rgba(247,147,26,.09)}
+input::placeholder{color:var(--text3)}
+.hp{padding-left:27px}.hs{padding-right:38px}
+select option{background:#1a1d2e}
+.pills{display:flex;gap:7px;flex-wrap:wrap}
+.pill{padding:9px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;font-family:'DM Sans'}
+.pill:hover{border-color:var(--btc);color:var(--text)}
+.pill.on{background:rgba(247,147,26,.1);border-color:var(--btc);color:var(--btc)}
+.era-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+@media(max-width:500px){.era-grid{grid-template-columns:1fr}}
+.era{background:var(--bg2);border:2px solid var(--border2);border-radius:14px;padding:16px 18px;cursor:pointer;transition:all .2s;position:relative}
+.era:hover{border-color:var(--blue)}.era.on{border-color:var(--blue);background:rgba(96,165,250,.08)}
+.era .era-check{position:absolute;top:12px;right:12px;width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s}
+.era.on .era-check{background:var(--blue);border-color:var(--blue);color:#fff}
+.era h4{font-size:13px;font-weight:600;margin-bottom:6px;padding-right:24px}
+.era .era-amount{font-family:'DM Mono';font-size:18px;font-weight:500;color:var(--blue);margin-bottom:6px}
+.era p{font-size:11px;color:var(--text3);line-height:1.5}.era.on h4{color:var(--blue)}
+.ni-explainer{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;margin-top:10px}
+.ni-bar-bg{height:8px;border-radius:4px;background:var(--border2);overflow:hidden;margin:8px 0 4px}
+.ni-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--btc),var(--accent));transition:width .5s ease}
+.ni-bar-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:'DM Mono';margin-top:4px}
+.ni-result{font-family:'DM Mono';font-size:12px;color:var(--btc);margin-top:6px;line-height:1.4}
+.ni-disp{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;font-family:'DM Mono';font-size:15px;color:var(--btc);font-weight:500}
+.s-hero{font-family:'DM Mono';font-size:28px;font-weight:500;margin-bottom:4px}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:var(--border2);outline:none;cursor:pointer;margin:4px 0;padding:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;border:3px solid var(--bg);cursor:pointer;box-shadow:0 0 8px rgba(247,147,26,.5);background:var(--btc)}
+.slab{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:3px}
+.stabs{display:flex;gap:7px;margin:12px 0 4px}
+.stab{flex:1;text-align:center;padding:9px 4px;border-radius:9px;border:1px solid var(--border2);background:var(--bg2);font-family:'DM Mono';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;color:var(--text3)}
+.st-bear{--c:var(--red)}.st-base{--c:var(--btc)}.st-bull{--c:var(--green)}
+.stab.on{border-color:var(--c);color:var(--c);background:color-mix(in srgb,var(--c) 10%,transparent)}
+.note{border-radius:10px;padding:12px 16px;font-size:13px;line-height:1.6;margin-top:10px}
+.nb{background:rgba(96,165,250,.07);border-left:3px solid var(--blue);color:var(--text2)}
+.ng{background:rgba(247,147,26,.07);border-left:3px solid var(--btc);color:var(--text2)}
+.note a{color:var(--blue)}.note strong{color:var(--blue)}.ng strong{color:var(--btc)}
+.addbtn{background:none;border:1px dashed var(--border2);border-radius:9px;color:var(--text3);padding:10px 18px;cursor:pointer;font-size:13px;transition:all .2s;margin-top:6px;font-family:'DM Sans'}
+.addbtn:hover{border-color:var(--btc);color:var(--btc)}
+.ls-row{display:flex;gap:3px;background:var(--border);border-radius:9px;padding:3px;margin:10px 0 6px}
+.ls-b{flex:1;border-radius:7px;padding:9px 4px;text-align:center;font-size:10px;font-family:'DM Mono';text-transform:uppercase;letter-spacing:.5px;cursor:default;transition:all .3s;color:var(--text3)}
+.ls-b.aon{background:rgba(247,147,26,.2);color:var(--btc);border:1px solid rgba(247,147,26,.3)}
+.btns{display:flex;gap:10px;margin-top:24px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.btn{padding:13px 28px;border-radius:10px;font-family:'DM Sans';font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;border:none}
+.bp{background:linear-gradient(135deg,var(--btc),var(--accent2));color:#000}
+.bp:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(247,147,26,.3)}
+.bs{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.bs:hover{border-color:var(--btc);color:var(--text)}
+.fill-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(247,147,26,.08);border:1px dashed rgba(247,147,26,.35);border-radius:8px;padding:8px 14px;color:var(--btc);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans'}
+.fill-btn:hover{background:rgba(247,147,26,.15);border-color:var(--btc)}
+.step-hdr{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+/* RESULTS */
+.r-hero{text-align:center;margin-bottom:28px;padding-top:8px}
+.r-hero .big{font-family:'Bebas Neue';font-size:clamp(48px,10vw,68px);letter-spacing:4px;line-height:1;background:linear-gradient(100deg,var(--btc),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.r-hero .sub{font-size:14px;color:var(--text2);margin-top:8px}
+/* KPI — mobile fixed */
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:14px}
+@media(max-width:700px){.kgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.kgrid{grid-template-columns:1fr}}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px 18px;transition:border-color .2s,transform .2s;overflow:hidden}
+.kpi:hover{border-color:var(--border2);transform:translateY(-2px)}
+.kl{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);font-family:'DM Mono';margin-bottom:8px;line-height:1.4}
+.kv{font-family:'Bebas Neue';font-size:clamp(20px,4vw,30px);letter-spacing:1px;line-height:1;word-break:break-all}
+.ks{font-size:11px;color:var(--text2);margin-top:5px;line-height:1.4}
+.cg{color:var(--btc)}.cc{color:var(--green)}.cr{color:var(--red)}.cb{color:var(--blue)}.cp{color:var(--purple)}
+/* BRIDGE */
+.bridge{background:linear-gradient(135deg,rgba(247,147,26,.08),rgba(247,147,26,.02));border:1px solid rgba(247,147,26,.22);border-radius:20px;padding:22px 24px;margin-bottom:12px}
+.bridge-t{font-family:'Bebas Neue';font-size:clamp(22px,5vw,28px);letter-spacing:2px;color:var(--btc);margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bi{width:30px;height:30px;flex-shrink:0}
+.bridge p{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.scgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:500px){.scgrid{grid-template-columns:1fr}}
+.scard{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+.scl{font-size:10px;font-family:'DM Mono';letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.scv{font-family:'Bebas Neue';font-size:clamp(18px,4vw,26px);letter-spacing:1px;word-break:break-all}
+.scr2{font-size:11px;color:var(--text3);margin-top:3px}
+.scs{font-size:11px;margin-top:6px;line-height:1.4}
+.sc-bear .scl{color:var(--red)}.sc-bear .scv{color:var(--red)}
+.sc-base .scl{color:var(--btc)}.sc-base .scv{color:var(--btc)}
+.sc-bull .scl{color:var(--green)}.sc-bull .scv{color:var(--green)}
+/* BANNERS */
+.banner{border-radius:14px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px}
+.banner-icon{font-size:24px;flex-shrink:0;margin-top:2px}
+.banner h4{font-size:14px;font-weight:600;margin-bottom:4px}
+.banner p{font-size:12px;line-height:1.6}
+.banner-surplus{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25)}
+.banner-surplus h4{color:var(--green)}
+.banner-surplus p{color:var(--text2)}
+.banner-warn{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25)}
+.banner-warn h4{color:var(--red)}
+.banner-warn p{color:var(--text2)}
+/* DCA OPTIMISER */
+.dca-card{background:linear-gradient(135deg,rgba(247,147,26,.09),rgba(247,147,26,.03));border:1px solid rgba(247,147,26,.28);border-radius:20px;padding:24px 26px;margin-bottom:12px}
+.dca-title{font-family:'Bebas Neue';font-size:26px;letter-spacing:2px;color:var(--btc);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.dca-sub{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6}
+.dca-rows{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.dca-row{background:var(--bg2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--border)}
+.dca-row.dca-bear{border-color:rgba(239,68,68,.25)}
+.dca-row.dca-base{border-color:rgba(247,147,26,.3)}
+.dca-row.dca-bull{border-color:rgba(34,197,94,.25)}
+.dca-scen{font-family:'DM Mono';font-size:10px;text-transform:uppercase;letter-spacing:1.5px;width:52px;flex-shrink:0}
+.dca-bear .dca-scen{color:var(--red)}
+.dca-base .dca-scen{color:var(--btc)}
+.dca-bull .dca-scen{color:var(--green)}
+.dca-rate{font-size:11px;color:var(--text3);width:70px;flex-shrink:0}
+.dca-amount{font-family:'Bebas Neue';font-size:24px;letter-spacing:1px;flex:1}
+.dca-bear .dca-amount{color:var(--red)}
+.dca-base .dca-amount{color:var(--btc)}
+.dca-bull .dca-amount{color:var(--green)}
+.dca-status{font-size:12px;margin-left:auto;text-align:right;line-height:1.4;min-width:100px}
+.dca-bar-wrap{margin-top:6px;width:100%}
+.dca-bar-bg{height:4px;background:var(--border2);border-radius:2px;overflow:hidden}
+.dca-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.dca-bear .dca-bar-fill{background:var(--red)}
+.dca-base .dca-bar-fill{background:var(--btc)}
+.dca-bull .dca-bar-fill{background:var(--green)}
+.dca-current-line{font-size:12px;color:var(--text2);padding:10px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--border2);display:flex;align-items:center;gap:8px}
+.dca-current-val{font-family:'DM Mono';color:var(--text);font-weight:500}
+/* PHASE BAR */
+.pbar{height:10px;border-radius:5px;background:var(--border);display:flex;overflow:hidden;margin:10px 0 6px}
+.pseg2{height:100%}
+.pevs{display:flex;justify-content:space-between}
+.pev{font-size:11px;color:var(--text3);text-align:center}
+.pev strong{display:block;color:var(--text2);font-family:'DM Mono'}
+.chart-wrap{position:relative;height:260px;margin:8px 0}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:620px){.charts-row{grid-template-columns:1fr}}
+.bkrow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px;flex-wrap:wrap}
+.bkrow:last-child{border:none;margin-top:6px;font-weight:600;font-size:15px;color:var(--btc)}
+.bkl{color:var(--text2);flex:1;min-width:120px}
+.bkp{font-family:'DM Mono';text-align:right;min-width:80px}
+.bki{font-family:'DM Mono';text-align:right;min-width:90px;color:var(--text3);font-size:11px}
+.tip-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+@media(max-width:600px){.tip-grid{grid-template-columns:1fr}}
+.tip{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px 16px}
+.tip-icon{font-size:20px;margin-bottom:6px}
+.tip h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.tip p{font-size:12px;color:var(--text3);line-height:1.5}
+/* INPUTS SUMMARY */
+.inputs-summary{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:16px 20px;margin-bottom:12px}
+.is-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:'DM Mono';margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.is-chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--text2);font-family:'DM Mono'}
+.chip .chip-lbl{color:var(--text3);font-size:10px;margin-right:2px}
+.chip-btc{border-color:rgba(247,147,26,.3);color:var(--btc);background:rgba(247,147,26,.07)}
+/* QUICK EDIT */
+.qe-card{background:linear-gradient(135deg,rgba(167,139,250,.07),rgba(167,139,250,.02));border:1px solid rgba(167,139,250,.25);border-radius:18px;padding:22px 24px;margin-top:16px}
+.qe-title{font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;color:var(--purple);margin-bottom:4px}
+.qe-sub{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5}
+.qe-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:650px){.qe-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:400px){.qe-grid{grid-template-columns:1fr}}
+.qe-recalc{width:100%;padding:15px;border-radius:12px;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;cursor:pointer;border:none;transition:all .2s}
+.qe-recalc:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(167,139,250,.3)}
+/* EXPORT */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-bg.hidden{display:none}
+.modal{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:24px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;gap:14px}
+.modal h3{font-family:'Bebas Neue';font-size:26px;letter-spacing:2px;color:var(--btc)}
+.modal textarea{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-family:'DM Mono';font-size:11px;line-height:1.7;padding:14px;resize:none;flex:1;min-height:280px;outline:none}
+.modal-btns{display:flex;gap:10px;flex-wrap:wrap}
+.copy-btn{flex:1;padding:12px;border-radius:10px;background:linear-gradient(135deg,var(--btc),var(--accent2));color:#000;font-family:'DM Sans';font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .2s;min-width:140px}
+.copy-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(247,147,26,.3)}
+.close-btn{padding:12px 20px;border-radius:10px;background:var(--bg2);color:var(--text2);font-family:'DM Sans';font-size:14px;cursor:pointer;border:1px solid var(--border2)}
+.copied-toast{display:none;position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:10px 24px;border-radius:20px;font-weight:600;font-size:13px;z-index:200;white-space:nowrap}
+.export-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);border-radius:10px;padding:10px 18px;color:var(--blue);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans';white-space:nowrap}
+.export-btn:hover{background:rgba(96,165,250,.18);border-color:var(--blue)}
+.d-only{display:none}
+.footer{text-align:center;margin-top:40px;font-size:11px;color:var(--text3);font-family:'DM Mono'}
+.disc{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;font-size:12px;color:var(--text3);line-height:1.7;margin-top:20px}
+@media print{
+  .bg-grid,.orb1,.orb2,.fill-btn,.btns,.export-btn,.mode-bar,.prog,.qe-card,.modal-bg{display:none!important}
+  body{background:#fff!important;color:#000!important}
+  .card,.kpi,.bridge,.scard,.tip,.inputs-summary,.dca-card,.banner{background:#f8f8f8!important;border-color:#ddd!important}
+  .stitle,.logo-t,.r-hero .big{-webkit-text-fill-color:#000!important}
+}
+
+/* ═══ EARLIEST RETIREMENT CARD ═══ */
+.earliest-card{background:linear-gradient(135deg,rgba(34,197,94,.07),rgba(34,197,94,.02));border:1px solid rgba(34,197,94,.25);border-radius:20px;padding:24px 26px;margin-bottom:12px}
+.earliest-title{font-family:'Bebas Neue';font-size:clamp(20px,4vw,26px);letter-spacing:2px;color:var(--green);margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.earliest-sub{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.6}
+.earliest-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:560px){.earliest-grid{grid-template-columns:1fr}}
+.earliest-item{background:var(--bg2);border-radius:14px;padding:18px 16px;border:2px solid var(--border2);text-align:center;transition:border-color .2s}
+.earliest-item.ei-bear{border-color:rgba(239,68,68,.35)}
+.earliest-item.ei-base{border-color:rgba(247,147,26,.4);background:rgba(247,147,26,.04)}
+.earliest-item.ei-none{border-color:rgba(96,165,250,.3)}
+.ei-label{font-size:10px;font-family:'DM Mono';text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.ei-bear .ei-label{color:var(--red)}.ei-base .ei-label{color:var(--btc)}.ei-none .ei-label{color:var(--blue)}
+.ei-age{font-family:'Bebas Neue';font-size:clamp(40px,8vw,56px);letter-spacing:2px;line-height:1;margin-bottom:6px}
+.ei-bear .ei-age{color:var(--red)}.ei-base .ei-age{color:var(--btc)}.ei-none .ei-age{color:var(--blue)}
+.ei-saving{font-size:12px;font-weight:600;line-height:1.4}
+
+/* ═══ RETIREMENT SLIDER ═══ */
+.ret-slider-wrap{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:18px 20px;margin-top:16px}
+.ret-slider-title{font-size:10px;font-family:'DM Mono';text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px}
+.ret-slider-hero{font-family:'Bebas Neue';font-size:34px;color:var(--green);margin-bottom:2px;line-height:1}
+.ret-slider-sub{font-size:12px;color:var(--text2);margin-bottom:10px}
+.ret-slider-ends{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:6px}
+.ret-slider-result{background:var(--bg3);border-radius:10px;padding:13px 16px;margin-top:12px;font-size:13px;color:var(--text2);line-height:1.6;min-height:46px;border:1px solid var(--border)}
+
+/* ═══ OPTIMISE FOR ME ═══ */
+.opt-card{background:linear-gradient(135deg,rgba(167,139,250,.08),rgba(167,139,250,.02));border:1px solid rgba(167,139,250,.28);border-radius:20px;padding:24px 26px;margin-bottom:12px}
+.opt-title{font-family:'Bebas Neue';font-size:clamp(20px,4vw,26px);letter-spacing:2px;color:var(--purple);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.opt-modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;margin-top:12px}
+.opt-mode{padding:9px 14px;border-radius:9px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans'}
+.opt-mode:hover{border-color:var(--purple);color:var(--purple)}
+.opt-mode.on{border-color:var(--purple);color:var(--purple);background:rgba(167,139,250,.1)}
+.opt-run{width:100%;padding:15px;border-radius:12px;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;cursor:pointer;border:none;transition:all .2s;margin-bottom:14px}
+.opt-run:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(167,139,250,.3)}
+.opt-result{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:18px 20px;display:none}
+.opt-result.show{display:block}
+.opt-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap}
+.opt-row:last-child{border:none;padding-top:12px}
+.opt-lbl{color:var(--text2);flex:1;font-size:13px}
+.opt-from{font-family:'DM Mono';color:var(--text3);font-size:12px;text-decoration:line-through;white-space:nowrap}
+.opt-to{font-family:'DM Mono';color:var(--green);font-size:14px;font-weight:600;white-space:nowrap}
+.opt-why{font-size:12px;color:var(--text3);margin-top:14px;line-height:1.7;padding:14px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)}
+
+/* ═══ POST-SP WARNING ═══ */
+.post-sp-warn{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.3);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:none}
+.post-sp-warn-title{font-size:14px;font-weight:700;color:var(--red);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.post-sp-warn p{font-size:13px;color:var(--text2);line-height:1.7}
+
+
+/* SAVE PROFILE BUTTON */
+.save-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:10px 18px;color:var(--green);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans';white-space:nowrap}
+.save-btn:hover{background:rgba(34,197,94,.18);border-color:var(--green);transform:translateY(-1px)}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div><div class="orb orb1"></div><div class="orb orb2"></div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-bg hidden" id="exportModal">
+  <div class="modal">
+    <h3>📊 Share Results</h3>
+    <p style="font-size:13px;color:var(--text2)">Copy and paste into Claude for analysis or what-if scenarios.</p>
+    <textarea id="exportText" readonly></textarea>
+    <div class="modal-btns">
+      <button class="copy-btn" onclick="copyExport()">📋 Copy to Clipboard</button>
+      <button class="close-btn" onclick="closeExport()">Close</button>
+    </div>
+  </div>
+</div>
+<div class="copied-toast" id="toast">✓ Copied!</div>
+
+<div class="shell">
+<!-- HEADER -->
+<div class="hdr">
+  <svg class="btc-logo" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#f7931a"/><path d="M46.1 27.3c.6-4.2-2.6-6.5-7-8l1.4-5.7-3.5-.9-1.4 5.5c-.9-.2-1.9-.4-2.8-.7l1.4-5.6-3.5-.9-1.4 5.7c-.8-.2-1.5-.4-2.2-.5v0l-4.8-1.2-.9 3.7s2.6.6 2.5.6c1.4.4 1.7 1.3 1.6 2l-1.6 6.4c.1 0 .2.1.4.1-.1 0-.3-.1-.4-.1l-2.2 8.9c-.2.4-.6 1-1.6.8.0.1-2.5-.6-2.5-.6l-1.7 4 4.5 1.1c.8.2 1.7.4 2.5.7l-1.5 5.8 3.5.9 1.4-5.7c.9.2 1.9.5 2.8.7l-1.4 5.6 3.5.9 1.5-5.8c6 1.1 10.5.7 12.4-4.7 1.5-4.3-.1-6.8-3.2-8.4 2.3-.5 4-2 4.4-5zm-7.9 11.1c-1.1 4.3-8.4 2-10.8 1.4l1.9-7.7c2.4.6 10.1 1.8 8.9 6.3zm1.1-11.2c-1 4-7.1 1.9-9.1 1.4l1.7-7c2 .5 8.4 1.5 7.4 5.6z" fill="white"/></svg>
+  <div><div class="logo-t">BitcoinSaveMe</div><div class="logo-s">UK Retirement &amp; Bitcoin Calculator</div></div>
+  <div class="hdr-r">
+    <div class="badge">🇬🇧 UK</div>
+    <div class="badge">v2.3</div>
+    <div class="badge" id="modeTag">⚡ Quick</div>
+  </div>
+</div>
+
+<!-- MODE BAR -->
+<div class="mode-bar">
+  <button class="mbtn on" id="mb-simple" onclick="setMode('simple')">⚡ Quick <span class="mbadge">5 MIN</span></button>
+  <button class="mbtn" id="mb-detail" onclick="setMode('detail')">🔬 Detailed <span class="mbadge">15 MIN</span></button>
+  <span class="mdesc" id="mdesc">Essentials only — we estimate the rest</span>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="pseg cur" id="ps0"></div><div class="pseg" id="ps1"></div>
+  <div class="pseg" id="ps2"></div><div class="pseg" id="ps3"></div>
+  <div class="pseg" id="ps4"></div>
+  <span class="plbl" id="plbl">Step 1 of 5</span>
+</div>
+
+<!-- STEP 1 -->
+<div class="step on" id="s0">
+  <div class="step-hdr">
+    <div><div class="stitle">You &amp; Your Family</div><div class="ssub">A few basics to personalise your plan.</div></div>
+    <button class="fill-btn" onclick="fillStep(0)">🎲 Random test data</button>
+  </div>
+
+  <!-- DEV TOOLS -->
+  <div style="margin-top:32px;text-align:center">
+    <button onclick="toggleDev()" id="devToggleBtn" style="background:none;border:none;color:var(--text3);font-size:11px;font-family:'DM Mono';cursor:pointer;padding:6px 12px;border-radius:6px;transition:color .2s;text-transform:uppercase;letter-spacing:1px">🛠 dev tools</button>
+  </div>
+  <div id="devPanel" style="display:none;margin-top:10px;background:rgba(247,147,26,.04);border:1px dashed rgba(247,147,26,.2);border-radius:12px;padding:16px 18px">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:'DM Mono';margin-bottom:10px">📥 Import test profile — paste JSON from Claude</div>
+
+    <!-- JSON README -->
+    <div style="margin-bottom:12px">
+      <button onclick="toggleReadme()" id="readmeBtn" style="background:none;border:1px solid var(--border2);border-radius:6px;color:var(--text3);font-size:11px;font-family:'DM Mono';cursor:pointer;padding:5px 10px;transition:all .2s">📖 JSON schema &amp; reference ▼</button>
+      <div id="readmePanel" style="display:none;margin-top:10px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;font-family:'DM Mono';font-size:11px;color:var(--text2);line-height:1.8;max-height:320px;overflow-y:auto">
+        <div style="color:var(--btc);font-weight:600;margin-bottom:8px">// BitcoinSaveMe v2.3 — JSON Profile Schema</div>
+        <div style="color:var(--text3);margin-bottom:10px">// Paste any of these fields — missing fields use defaults or zero</div>
+
+        <div style="color:var(--blue)">// ── IDENTITY ──</div>
+        <div><span style="color:var(--green)">"profile"</span>: <span style="color:var(--accent)">"string"</span>  <span style="color:var(--text3)">// display name, e.g. "My Test"</span></div>
+        <div><span style="color:var(--green)">"myAge"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// your current age (25-74)</span></div>
+        <div><span style="color:var(--green)">"retireAge"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// target retirement age (50-75)</span></div>
+        <div><span style="color:var(--green)">"hhIncome"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// annual household income £</span></div>
+        <div><span style="color:var(--green)">"hasSpouse"</span>: <span style="color:var(--accent)">true/false</span>  <span style="color:var(--text3)">// partner toggle</span></div>
+        <div><span style="color:var(--green)">"spouseAge"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// partner age (if hasSpouse)</span></div>
+
+        <div style="color:var(--blue);margin-top:8px">// ── PENSIONS ──</div>
+        <div><span style="color:var(--green)">"myNI"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// your NI qualifying years so far</span></div>
+        <div><span style="color:var(--green)">"spouseNI"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// partner NI years</span></div>
+        <div><span style="color:var(--green)">"myPension"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// private pension pot value £</span></div>
+        <div><span style="color:var(--green)">"myPensionContrib"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// monthly contributions £ (you + employer)</span></div>
+        <div><span style="color:var(--green)">"spousePension"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// partner pension pot £</span></div>
+        <div><span style="color:var(--green)">"spousePensionContrib"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// partner monthly contributions £</span></div>
+
+        <div style="color:var(--blue);margin-top:8px">// ── BITCOIN ──</div>
+        <div><span style="color:var(--green)">"btcCoins"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// BTC holdings e.g. 0.5</span></div>
+        <div><span style="color:var(--green)">"btcPrice"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// current BTC price £ (default: 68000)</span></div>
+        <div><span style="color:var(--green)">"btcMonthly"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// monthly DCA £</span></div>
+        <div><span style="color:var(--green)">"altcoins"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// other crypto total value £</span></div>
+
+        <div style="color:var(--blue);margin-top:8px">// ── ASSETS ──</div>
+        <div><span style="color:var(--green)">"isaVal"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// S&S ISA current value £</span></div>
+        <div><span style="color:var(--green)">"isaContrib"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// ISA annual contribution £ (max 20000)</span></div>
+        <div><span style="color:var(--green)">"homeVal"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// primary home value £</span></div>
+        <div><span style="color:var(--green)">"mortgageVal"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// remaining mortgage £</span></div>
+        <div><span style="color:var(--green)">"investVal"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// investment portfolio £ (outside ISA)</span></div>
+        <div><span style="color:var(--green)">"cashVal"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// cash savings £</span></div>
+        <div><span style="color:var(--green)">"premBonds"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// premium bonds £</span></div>
+        <div><span style="color:var(--green)">"rentalIncome"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// annual rental income £</span></div>
+
+        <div style="color:var(--blue);margin-top:8px">// ── LIFESTYLE ──</div>
+        <div><span style="color:var(--green)">"targetIncome"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// annual retirement income target £</span></div>
+        <div><span style="color:var(--green)">"planUntil"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// plan until age (default: 90)</span></div>
+        <div><span style="color:var(--green)">"inflation"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// inflation rate % (default: 2.5)</span></div>
+        <div><span style="color:var(--green)">"statePensionAge"</span>: <span style="color:var(--accent)">number</span>  <span style="color:var(--text3)">// state pension age (default: 67)</span></div>
+
+        <div style="color:var(--text3);margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
+          <div style="color:var(--btc);margin-bottom:4px">// ── EXAMPLE — MINIMAL VALID PROFILE ──</div>
+          <div>{</div>
+          <div>&nbsp;&nbsp;"profile": "My Test",</div>
+          <div>&nbsp;&nbsp;"myAge": 50, "retireAge": 60,</div>
+          <div>&nbsp;&nbsp;"hasSpouse": true, "spouseAge": 48,</div>
+          <div>&nbsp;&nbsp;"myNI": 28, "myPension": 150000,</div>
+          <div>&nbsp;&nbsp;"myPensionContrib": 1000,</div>
+          <div>&nbsp;&nbsp;"btcCoins": 0.5, "btcMonthly": 300,</div>
+          <div>&nbsp;&nbsp;"isaVal": 40000, "isaContrib": 8000,</div>
+          <div>&nbsp;&nbsp;"homeVal": 400000, "mortgageVal": 100000,</div>
+          <div>&nbsp;&nbsp;"cashVal": 20000, "targetIncome": 45000</div>
+          <div>}</div>
+        </div>
+
+        <div style="color:var(--text3);margin-top:10px;font-size:10px">
+          // Growth assumptions (not overridable via JSON in quick mode):<br>
+          // Pension: 5% p.a. · ISA: 7% p.a. · Investments: 6% p.a.<br>
+          // Cash/bonds: 3.5% p.a. · BTC: set via scenario sliders<br>
+          // State pension: New rules £11,502/yr (35 NI yrs) · Old rules £8,814/yr (30 NI yrs)<br>
+          // Drawdown: 4% rule applied to all investment pots at retirement
+        </div>
+      </div>
+    </div>
+
+    <input type="file" id="jsonFileInput" accept=".json,application/json" style="display:none" onchange="loadJsonFile(event)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <button onclick="document.getElementById('jsonFileInput').click()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-size:11px;font-family:'DM Mono';cursor:pointer;padding:6px 12px;transition:all .2s;display:flex;align-items:center;gap:6px" onmouseover="this.style.borderColor='var(--btc)';this.style.color='var(--btc)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">📂 Open .json file</button>
+      <span style="font-size:10px;color:var(--text3);font-family:'DM Mono'">or paste JSON below</span>
+    </div>
+    <textarea id="importJson" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-family:'DM Mono';font-size:11px;padding:10px 12px;resize:vertical;min-height:64px;outline:none;line-height:1.5;transition:border-color .2s" placeholder='{"profile":"My Test","myAge":50,"retireAge":60,...}' ondragover="this.style.borderColor='var(--btc)'" ondragleave="this.style.borderColor='var(--border2)'" ondrop="handleJsonDrop(event)"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button onclick="importAndCalculate()" style="background:linear-gradient(135deg,var(--btc),var(--accent2));color:#000;border:none;border-radius:8px;padding:8px 16px;font-family:'DM Sans';font-size:13px;font-weight:700;cursor:pointer">⚡ Import &amp; Calculate</button><button onclick="importProfile()" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-family:'DM Sans';font-size:12px;cursor:pointer">Populate only</button>
+      <button onclick="clearImport()" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-family:'DM Sans';font-size:12px;cursor:pointer">Clear</button>
+    </div>
+    <div id="importErr" style="font-size:12px;color:var(--red);margin-top:6px;display:none">⚠ Invalid JSON — check format</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap">
+      <div id="importOk" style="font-size:12px;color:var(--green);display:none">✓ Imported!</div>
+      <button id="importJumpBtn" onclick="calc()" style="display:none;background:var(--green);color:#000;border:none;border-radius:8px;padding:7px 14px;font-family:'DM Sans';font-size:12px;font-weight:700;cursor:pointer;transition:all .2s">→ Jump to Results</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="chd"><span class="pip"></span>The Essentials</div>
+    <div class="g2">
+      <div class="f"><label>Your Age</label><div class="iw"><input type="number" id="myAge" placeholder="e.g. 50" min="25" max="74"><span class="sfx">yrs</span></div></div>
+      <div class="f"><label>Retire At Age</label><div class="iw"><input type="number" id="retireAge" placeholder="e.g. 60" min="50" max="75"><span class="sfx">yrs</span></div></div>
+      <div class="f"><label>Partner?</label>
+        <div class="pills" id="pg-spouse">
+          <button class="pill on" onclick="pclick('pg-spouse',this);setSpouse(false)">Solo</button>
+          <button class="pill" onclick="pclick('pg-spouse',this);setSpouse(true)">I have a partner</button>
+        </div>
+      </div>
+      <div class="f"><label>Annual Household Income</label><div class="iw"><span class="pfx">£</span><input type="number" id="hhIncome" class="hp" placeholder="e.g. 90000"></div><span class="hint">Combined if couple</span></div>
+    </div>
+  </div>
+  <div id="partnerBlock" style="display:none">
+    <div class="card">
+      <div class="chd"><span class="pip"></span>Your Partner</div>
+      <div class="g2">
+        <div class="f"><label>Partner's Age</label><div class="iw"><input type="number" id="spouseAge" placeholder="e.g. 48"><span class="sfx">yrs</span></div></div>
+        <div class="f"><label>Partner Retires</label>
+          <select id="spouseRetires" onchange="togSpRet()">
+            <option value="same">Same time as me</option>
+            <option value="state">At state pension age (67)</option>
+            <option value="custom">Custom age</option>
+          </select>
+        </div>
+        <div class="f" id="spRetCustom" style="display:none"><label>Partner's Retirement Age</label><div class="iw"><input type="number" id="spouseRetireAge" placeholder="e.g. 62"><span class="sfx">yrs</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="btns"><button class="btn bp" onclick="nxt()">Continue →</button></div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step" id="s1">
+  <div class="step-hdr">
+    <div><div class="stitle">Pension Entitlements</div><div class="ssub">State and private pensions — the bedrock of your plan.</div></div>
+    <button class="fill-btn" onclick="fillStep(1)">🎲 Random test data</button>
+  </div>
+  <div class="card c-blue-card">
+    <div class="chd"><span class="pip" style="background:var(--blue)"></span>UK State Pension — Which Rules Apply To You?</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:4px;line-height:1.6">The UK state pension changed in April 2016. <strong style="color:var(--blue)">Select what best describes your work history:</strong></p>
+    <div class="era-grid">
+      <div class="era on" id="era-new-me" onclick="setEra('me','new')">
+        <div class="era-check">✓</div><h4>New State Pension</h4>
+        <div class="era-amount">up to £11,502/yr</div>
+        <p>Mainly post-April 2016 NI record. Needs <strong>35 qualifying years</strong> for the full amount.</p>
+      </div>
+      <div class="era" id="era-old-me" onclick="setEra('me','old')">
+        <div class="era-check"></div><h4>Basic State Pension (pre-2016)</h4>
+        <div class="era-amount">up to £8,814/yr</div>
+        <p>Substantial pre-2016 contributions. May get SERPS/S2P on top. Needs <strong>30 qualifying years</strong>.</p>
+      </div>
+    </div>
+    <div class="g2" style="margin-top:14px">
+      <div class="f"><label>Your NI Qualifying Years So Far</label>
+        <div class="iw"><input type="number" id="myNI" placeholder="e.g. 28" min="0" max="50" oninput="calcNI()"><span class="sfx">yrs</span></div>
+        <span class="hint">Each year you paid NI or received credits counts. Check yours at gov.uk</span>
+      </div>
+      <div class="f"><label>Projected Years by State Pension Age</label>
+        <div class="ni-disp" id="myNIProj">—</div>
+        <span class="hint">Assumes you keep working / paying NI</span>
+      </div>
+    </div>
+    <div class="ni-explainer">
+      <div style="font-size:11px;color:var(--text3);font-family:'DM Mono';text-transform:uppercase;letter-spacing:1px">NI Progress toward full state pension</div>
+      <div class="ni-bar-bg"><div class="ni-bar-fill" id="myNIBar" style="width:0%"></div></div>
+      <div class="ni-bar-labels"><span>0 yrs</span><span id="myNIBarMax">35 yrs (full)</span></div>
+      <div class="ni-result" id="myNIResult">Enter your NI years above</div>
+    </div>
+    <div id="pre2016me" style="display:none;margin-top:14px">
+      <div class="g2">
+        <div class="f"><label>SERPS / S2P (£/yr)</label><div class="iw"><span class="pfx">£</span><input type="number" id="mySerps" class="hp" placeholder="e.g. 2000"></div></div>
+        <div class="f"><label>Contracted out?</label><select id="myContractOut"><option value="no">No / not sure</option><option value="yes">Yes — contracted out</option></select></div>
+      </div>
+    </div>
+    <div class="note nb" style="margin-top:14px">💡 <strong>2 min check:</strong> <a href="https://www.gov.uk/check-state-pension" target="_blank">gov.uk/check-state-pension</a></div>
+  </div>
+  <div id="spStatePensCard" style="display:none" class="card c-blue-card">
+    <div class="chd"><span class="pip" style="background:var(--blue)"></span>State Pension — Partner</div>
+    <div class="era-grid">
+      <div class="era on" id="era-new-sp" onclick="setEra('sp','new')"><div class="era-check">✓</div><h4>New State Pension</h4><div class="era-amount">up to £11,502/yr</div><p>Mainly post-2016 · 35 qualifying years</p></div>
+      <div class="era" id="era-old-sp" onclick="setEra('sp','old')"><div class="era-check"></div><h4>Basic State Pension (pre-2016)</h4><div class="era-amount">up to £8,814/yr</div><p>Substantial pre-2016 · 30 years</p></div>
+    </div>
+    <div class="g2" style="margin-top:14px">
+      <div class="f"><label>Partner's NI Years</label><div class="iw"><input type="number" id="spouseNI" placeholder="e.g. 22" min="0" max="50" oninput="calcNI()"><span class="sfx">yrs</span></div></div>
+      <div class="f"><label>Partner's Projected NI by 67</label><div class="ni-disp" id="spNIProj">—</div></div>
+    </div>
+    <div id="pre2016sp" style="display:none;margin-top:10px">
+      <div class="f"><label>Partner's SERPS/S2P (£/yr)</label><div class="iw"><span class="pfx">£</span><input type="number" id="spouseSerps" class="hp" placeholder="e.g. 1500"></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="chd"><span class="pip"></span>Private Pension — You</div>
+    <div class="g2">
+      <div class="f"><label>Current Pot Value</label><div class="iw"><span class="pfx">£</span><input type="number" id="myPension" class="hp" placeholder="e.g. 120000"></div></div>
+      <div class="f"><label>Monthly Contributions (you + employer)</label><div class="iw"><span class="pfx">£</span><input type="number" id="myPensionContrib" class="hp" placeholder="e.g. 800"></div></div>
+      <div class="f d-only"><label>Expected Growth Rate</label><div class="iw"><input type="number" id="myPensionGrowth" value="5"><span class="sfx">% p.a.</span></div></div>
+    </div>
+  </div>
+  <div id="spPrivPensCard" style="display:none" class="card">
+    <div class="chd"><span class="pip"></span>Private Pension — Partner</div>
+    <div class="g2">
+      <div class="f"><label>Partner's Pot Value</label><div class="iw"><span class="pfx">£</span><input type="number" id="spousePension" class="hp" placeholder="e.g. 80000"></div></div>
+      <div class="f"><label>Partner's Monthly Contributions</label><div class="iw"><span class="pfx">£</span><input type="number" id="spousePensionContrib" class="hp" placeholder="e.g. 500"></div></div>
+    </div>
+  </div>
+  <div class="btns"><button class="btn bs" onclick="prv()">← Back</button><button class="btn bp" onclick="nxt()">Continue →</button></div>
+</div>
+
+<!-- STEP 3 -->
+<div class="step" id="s2">
+  <div class="step-hdr">
+    <div><div class="stitle">Wealth &amp; Assets</div><div class="ssub">Every pound working for you compounds into future freedom.</div></div>
+    <button class="fill-btn" onclick="fillStep(2)">🎲 Random test data</button>
+  </div>
+  <div class="card c-btc-card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <svg width="36" height="36" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#f7931a"/><path d="M46.1 27.3c.6-4.2-2.6-6.5-7-8l1.4-5.7-3.5-.9-1.4 5.5c-.9-.2-1.9-.4-2.8-.7l1.4-5.6-3.5-.9-1.4 5.7c-.8-.2-1.5-.4-2.2-.5v0l-4.8-1.2-.9 3.7s2.6.6 2.5.6c1.4.4 1.7 1.3 1.6 2l-1.6 6.4c.1 0 .2.1.4.1-.1 0-.3-.1-.4-.1l-2.2 8.9c-.2.4-.6 1-1.6.8.0.1-2.5-.6-2.5-.6l-1.7 4 4.5 1.1c.8.2 1.7.4 2.5.7l-1.5 5.8 3.5.9 1.4-5.7c.9.2 1.9.5 2.8.7l-1.4 5.6 3.5.9 1.5-5.8c6 1.1 10.5.7 12.4-4.7 1.5-4.3-.1-6.8-3.2-8.4 2.3-.5 4-2 4.4-5zm-7.9 11.1c-1.1 4.3-8.4 2-10.8 1.4l1.9-7.7c2.4.6 10.1 1.8 8.9 6.3zm1.1-11.2c-1 4-7.1 1.9-9.1 1.4l1.7-7c2 .5 8.4 1.5 7.4 5.6z" fill="white"/></svg>
+      <div><div class="chd" style="margin-bottom:0;color:var(--btc)"><span class="pip"></span>Bitcoin — Your Key Asset</div><div style="font-size:11px;color:var(--text3)">3 scenarios — the star of your plan</div></div>
+    </div>
+    <div class="g2">
+      <div class="f"><label>BTC Holdings</label><div class="iw"><input type="number" id="btcCoins" placeholder="e.g. 0.5" step="0.001" oninput="updBtcVal()"><span class="sfx">BTC</span></div></div>
+      <div class="f"><label>Current BTC Price (£)</label><div class="iw"><span class="pfx">£</span><input type="number" id="btcPrice" class="hp" value="68000" oninput="updBtcVal()"></div><span class="hint" id="btcCurVal">Current value: £0</span></div>
+      <div class="f"><label>Monthly DCA (£)</label><div class="iw"><span class="pfx">£</span><input type="number" id="btcMonthly" class="hp" value="0"></div><span class="hint">Regular buys until retirement</span></div>
+      <div class="f"><label>Other Crypto (£ value)</label><div class="iw"><span class="pfx">£</span><input type="number" id="altcoins" class="hp" value="0"></div></div>
+    </div>
+    <!-- DEFAULT IS NOW BASE -->
+    <div class="stabs">
+      <button class="stab st-bear" id="st-bear" onclick="setScen('bear',this)">🐻 Bear</button>
+      <button class="stab st-base on" id="st-base" onclick="setScen('base',this)">📈 Base</button>
+      <button class="stab st-bull" id="st-bull" onclick="setScen('bull',this)">🚀 Bull</button>
+    </div>
+    <div class="s-hero" id="btcRateHero">25% p.a.</div>
+    <input type="range" id="btcSlider" min="2" max="60" value="25" oninput="updSlider()">
+    <div class="slab"><span>2% conservative</span><span id="btcScenLbl" style="color:var(--btc);font-family:'DM Mono'">BASE</span><span>60% hyperbolic</span></div>
+    <div class="note ng" id="btcHintTxt" style="margin-top:10px;font-size:12px">Base: Another adoption cycle. Nation-state buying accelerates. BTC reaches gold parity.</div>
+  </div>
+  <div class="card">
+    <div class="chd"><span class="pip"></span>Stocks &amp; Shares ISA</div>
+    <div class="g2">
+      <div class="f"><label>Current ISA Value</label><div class="iw"><span class="pfx">£</span><input type="number" id="isaVal" class="hp" value="0"></div></div>
+      <div class="f"><label>Annual ISA Contribution</label><div class="iw"><span class="pfx">£</span><input type="number" id="isaContrib" class="hp" value="0"></div><span class="hint">Max £20,000/yr · tax-free</span></div>
+      <div class="f d-only"><label>Expected Return</label><div class="iw"><input type="number" id="isaGrowth" value="7"><span class="sfx">% p.a.</span></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="chd"><span class="pip"></span>Property &amp; Equity</div>
+    <div class="g2">
+      <div class="f"><label>Primary Home Value</label><div class="iw"><span class="pfx">£</span><input type="number" id="homeVal" class="hp" value="0"></div></div>
+      <div class="f"><label>Remaining Mortgage</label><div class="iw"><span class="pfx">£</span><input type="number" id="mortgageVal" class="hp" value="0"></div></div>
+      <div class="f d-only"><label>Annual Rental Income</label><div class="iw"><span class="pfx">£</span><input type="number" id="rentalIncome" class="hp" value="0"></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="chd"><span class="pip"></span>Investments &amp; Cash</div>
+    <div class="g2">
+      <div class="f"><label>Investment Portfolio</label><div class="iw"><span class="pfx">£</span><input type="number" id="investVal" class="hp" value="0"></div></div>
+      <div class="f"><label>Cash Savings</label><div class="iw"><span class="pfx">£</span><input type="number" id="cashVal" class="hp" value="0"></div></div>
+      <div class="f d-only"><label>Premium Bonds</label><div class="iw"><span class="pfx">£</span><input type="number" id="premBonds" class="hp" value="0"></div></div>
+    </div>
+  </div>
+  <div class="btns"><button class="btn bs" onclick="prv()">← Back</button><button class="btn bp" onclick="nxt()">Continue →</button></div>
+</div>
+
+<!-- STEP 4 -->
+<div class="step" id="s3">
+  <div class="step-hdr">
+    <div><div class="stitle">Retirement Lifestyle</div><div class="ssub">Mortgage paid, couple of holidays, decent life — what does that cost?</div></div>
+    <button class="fill-btn" onclick="fillStep(3)">🎲 Random test data</button>
+  </div>
+  <div class="card">
+    <div class="chd"><span class="pip"></span>PLSA 2024 Benchmarks — Couple</div>
+    <div class="ls-row">
+      <div class="ls-b" id="ls-min">Minimum<br><small>£22,400</small></div>
+      <div class="ls-b aon" id="ls-mod">Moderate<br><small>£34,000</small></div>
+      <div class="ls-b" id="ls-com">Comfortable<br><small>£54,500</small></div>
+    </div>
+    <p style="font-size:11px;color:var(--text3)">Single: ~£13k / £23k / £37k. Highlights as you type.</p>
+  </div>
+  <div class="card">
+    <div class="chd"><span class="pip"></span>Your Numbers</div>
+    <div class="g2">
+      <div class="f"><label>Target Annual Income (today's £)</label><div class="iw"><span class="pfx">£</span><input type="number" id="targetIncome" class="hp" value="45000" oninput="hilite()"></div><span class="hint">Joint if couple</span></div>
+      <div class="f"><label>Plan Until Age</label><div class="iw"><input type="number" id="planUntil" value="90"><span class="sfx">yrs</span></div></div>
+      <div class="f"><label>Inflation</label><div class="iw"><input type="number" id="inflation" value="2.5"><span class="sfx">% p.a.</span></div></div>
+      <div class="f"><label>State Pension Age</label><div class="iw"><input type="number" id="statePensionAge" value="67"><span class="sfx">yrs</span></div></div>
+    </div>
+  </div>
+  <div class="btns"><button class="btn bs" onclick="prv()">← Back</button><button class="btn bp" onclick="calc()">Calculate My Plan ₿</button></div>
+</div>
+
+<!-- STEP 5: RESULTS -->
+<div class="step" id="s4">
+  <div class="r-hero"><div class="big">YOUR PLAN</div><div class="sub" id="rSub"></div></div>
+  <div class="inputs-summary"><div class="is-title"><span class="pip"></span>Based on these inputs</div><div class="is-chips" id="inputChips"></div></div>
+  <div id="surplusBanner" style="display:none"></div>
+  <div id="bridgeWarnBanner" style="display:none"></div>
+  <div class="kgrid" id="kpiGrid"></div>
+  <div class="bridge">
+    <div class="bridge-t"><svg class="bi" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#f7931a"/><path d="M46.1 27.3c.6-4.2-2.6-6.5-7-8l1.4-5.7-3.5-.9-1.4 5.5c-.9-.2-1.9-.4-2.8-.7l1.4-5.6-3.5-.9-1.4 5.7c-.8-.2-1.5-.4-2.2-.5v0l-4.8-1.2-.9 3.7s2.6.6 2.5.6c1.4.4 1.7 1.3 1.6 2l-1.6 6.4c.1 0 .2.1.4.1-.1 0-.3-.1-.4-.1l-2.2 8.9c-.2.4-.6 1-1.6.8.0.1-2.5-.6-2.5-.6l-1.7 4 4.5 1.1c.8.2 1.7.4 2.5.7l-1.5 5.8 3.5.9 1.4-5.7c.9.2 1.9.5 2.8.7l-1.4 5.6 3.5.9 1.5-5.8c6 1.1 10.5.7 12.4-4.7 1.5-4.3-.1-6.8-3.2-8.4 2.3-.5 4-2 4.4-5zm-7.9 11.1c-1.1 4.3-8.4 2-10.8 1.4l1.9-7.7c2.4.6 10.1 1.8 8.9 6.3zm1.1-11.2c-1 4-7.1 1.9-9.1 1.4l1.7-7c2 .5 8.4 1.5 7.4 5.6z" fill="white"/></svg>The Bitcoin Bridge</div>
+    <p id="bridgeDesc"></p>
+    <div class="scgrid" id="scenGrid"></div>
+  </div>
+  <!-- DCA OPTIMISER — shown when gap exists -->
+  <div id="dcaOptimiser" style="display:none"></div>
+  <div class="charts-row">
+    <div class="card"><div class="chd"><span class="pip"></span>Portfolio Growth to Retirement</div><div class="chart-wrap"><canvas id="growthChart"></canvas></div></div>
+    <div class="card"><div class="chd"><span class="pip"></span>BTC Scenarios vs Gap <span style="font-size:9px;color:var(--text3)">(log scale)</span></div><div class="chart-wrap"><canvas id="btcChart"></canvas></div></div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="chd"><span class="pip"></span>Projected Annual Income by Phase</div>
+    <div class="chart-wrap" style="height:200px"><canvas id="incomeChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="chd"><span class="pip"></span>Retirement Timeline</div>
+    <div class="pbar" id="phaseBar"></div>
+    <div class="pevs" id="phaseEvs"></div>
+    <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;border-radius:2px;background:linear-gradient(90deg,var(--accent2),var(--btc))"></div>Bridge gap</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;border-radius:2px;background:linear-gradient(90deg,var(--green),rgba(34,197,94,.4))"></div>State pension + income</div>
+    </div>
+  </div>
+  <div class="card"><div class="chd"><span class="pip"></span>Full Asset &amp; Income Breakdown at Retirement</div><div id="bkTable"></div></div>
+  <div class="card c-green-card"><div class="chd"><span class="pip" style="background:var(--green)"></span>Planning Tips &amp; Actions</div><div class="tip-grid" id="tipGrid"></div></div>
+
+  <!-- POST-SP WARNING -->
+  <div class="post-sp-warn" id="postSpWarn">
+    <div class="post-sp-warn-title">🚨 Serious — State Pension Won't Be Enough</div>
+    <p id="postSpWarnText"></p>
+  </div>
+
+  <!-- EARLIEST RETIREMENT -->
+  <div class="earliest-card" id="earliestCard">
+    <div class="earliest-title">🎯 When Could You Actually Retire?</div>
+    <div class="earliest-sub" id="earliestSub"></div>
+    <div class="earliest-grid" id="earliestGrid"></div>
+    <div class="ret-slider-wrap">
+      <div class="ret-slider-title">Drag to explore different retirement ages</div>
+      <div class="ret-slider-hero" id="retSliderAge">Age —</div>
+      <div class="ret-slider-sub" id="retSliderSub">Drag to see your gap at any age</div>
+      <input type="range" id="retireSlider" min="45" max="70" value="60" oninput="onRetireSlider()">
+      <div class="ret-slider-ends"><span>◀ Age 45</span><span>Age 70 ▶</span></div>
+      <div class="ret-slider-result" id="retSliderResult">Calculate your plan to use the slider.</div>
+    </div>
+  </div>
+
+  <!-- OPTIMISE FOR ME -->
+  <div class="opt-card">
+    <div class="opt-title">✨ Optimise For Me</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Tell me what matters most — I'll find the best combination of levers.</p>
+    <div class="opt-modes">
+      <button class="opt-mode on" id="om-earliest" onclick="setOptMode('earliest',this)">⏰ Earliest Retirement</button>
+      <button class="opt-mode" id="om-lowestdca" onclick="setOptMode('lowestdca',this)">₿ Lowest DCA</button>
+      <button class="opt-mode" id="om-conservative" onclick="setOptMode('conservative',this)">🐻 Bear-Safe</button>
+      <button class="opt-mode" id="om-balanced" onclick="setOptMode('balanced',this)">⚖️ Balanced</button>
+    </div>
+    <button class="opt-run" onclick="runOptimiser()">✨ OPTIMISE MY PLAN</button>
+    <div class="opt-result" id="optResult" style="display:none"></div>
+  </div>
+
+  <div class="qe-card">
+    <div class="qe-title">⚡ Tweak &amp; Recalculate</div>
+    <div class="qe-sub">Adjust the key levers and instantly see the impact.</div>
+    <div class="qe-grid">
+      <div class="f"><label>Retire At Age</label><div class="iw"><input type="number" id="qe_retireAge"><span class="sfx">yrs</span></div></div>
+      <div class="f"><label>Target Income</label><div class="iw"><span class="pfx">£</span><input type="number" id="qe_targetIncome" class="hp"></div></div>
+      <div class="f"><label>BTC Holdings</label><div class="iw"><input type="number" id="qe_btcCoins" step="0.001"><span class="sfx">BTC</span></div></div>
+      <div class="f"><label>Monthly DCA (£)</label><div class="iw"><span class="pfx">£</span><input type="number" id="qe_btcMonthly" class="hp"></div></div>
+      <div class="f"><label>Pension Contributions/mo</label><div class="iw"><span class="pfx">£</span><input type="number" id="qe_penContrib" class="hp"></div></div>
+      <div class="f"><label>ISA Annual Contribution</label><div class="iw"><span class="pfx">£</span><input type="number" id="qe_isaContrib" class="hp"></div></div>
+    </div>
+    <button class="qe-recalc" onclick="quickRecalc()">↻ RECALCULATE YOUR PLAN</button>
+  </div>
+  <div class="disc">⚠️ <strong>Important:</strong> BitcoinSaveMe is for illustrative planning purposes only and does not constitute financial advice. Bitcoin projections involve significant uncertainty. State pension figures based on 2024/25 rates. Consult a qualified IFA before major decisions. <strong>Privacy:</strong> No data is stored, collected or transmitted — all calculations run entirely in your browser.</div>
+  <div class="btns" style="justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:12px">
+    <button class="btn bs" onclick="prv()" title="Go back and adjust your inputs">← Full Edit</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+      <button class="save-btn" onclick="saveProfile()" title="Download your inputs as a JSON file — reimport anytime to pick up where you left off">💾 Save My Profile</button>
+      <button class="export-btn" onclick="openExport()" title="Copy a plain-text summary of your results — paste into Claude or any AI for deeper analysis">📊 Share Results</button>
+      <button class="btn bp" onclick="window.print()" title="Print this page or save as PDF via your browser print dialog">🖨 Print / PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  BitcoinSaveMe v2.3 · For planning purposes only · Not financial advice<br>
+  <span style="opacity:.7">No data is stored or transmitted — everything runs locally in your browser</span>
+</div>
+</div>
+
+<script>
+/* ══ STATE ══ */
+let step=0,mode='simple',hasSpouse=false;
+let myEra='new',spEra='new';
+let activeScen='base',btcRates={bear:8,base:25,bull:50}; // FIX: default base
+const STEPS=5;
+let lastResults=null,charts={};
+const btcHints={
+  bear:'Bear: BTC matures as an institutional asset. Growth normalises to high single digits.',
+  base:'Base: Another adoption cycle. Nation-state buying accelerates. BTC reaches gold parity.',
+  bull:'Bull: Hyperbolic adoption as a global reserve asset. Multi-cycle compounding.'
+};
+const btcCols={bear:'var(--red)',base:'var(--btc)',bull:'var(--green)'};
+
+/* ══ PROFILES ══ */
+const profiles=[
+  // 1. Gen X couple — just discovered BTC, small stack, sensible plan
+  {label:'Gen X Couple · Early BTC',
+   age:50,ret:62,sp:true,spAge:48,inc:95000,ni:28,spNI:24,
+   pen:185000,penM:1100,spPen:90000,spPenM:600,
+   btc:0.3,btcMo:200,isa:42000,isaC:8000,
+   home:420000,mort:130000,inv:12000,cash:22000,target:48000,plan:90},
+
+  // 2. Gen X solo — good saver, zero crypto, "am I ok?"
+  {label:'Gen X Solo · No BTC',
+   age:54,ret:63,sp:false,spAge:0,inc:72000,ni:32,spNI:0,
+   pen:220000,penM:900,spPen:0,spPenM:0,
+   btc:0,btcMo:0,isa:55000,isaC:10000,
+   home:380000,mort:60000,inv:18000,cash:30000,target:36000,plan:88},
+
+  // 3. Millennial couple — BTC believers, building stack, modest pension
+  {label:'Millennial Couple · BTC Believers',
+   age:38,ret:55,sp:true,spAge:36,inc:110000,ni:16,spNI:13,
+   pen:65000,penM:800,spPen:30000,spPenM:400,
+   btc:1.5,btcMo:500,isa:28000,isaC:12000,
+   home:350000,mort:220000,inv:8000,cash:15000,target:55000,plan:90},
+
+  // 4. Millennial solo — renting, ISA-heavy, some BTC, no property
+  {label:'Millennial Solo · Renting',
+   age:41,ret:58,sp:false,spAge:0,inc:68000,ni:19,spNI:0,
+   pen:78000,penM:700,spPen:0,spPenM:0,
+   btc:0.8,btcMo:300,isa:48000,isaC:15000,
+   home:0,mort:0,inv:22000,cash:12000,target:32000,plan:88},
+
+  // 5. Boomer couple — nearly there, strong pension, no BTC, just checking
+  {label:'Boomer Couple · Nearly There',
+   age:61,ret:65,sp:true,spAge:59,inc:85000,ni:35,spNI:32,
+   pen:420000,penM:400,spPen:195000,spPenM:200,
+   btc:0,btcMo:0,isa:88000,isaC:4000,
+   home:580000,mort:0,inv:35000,cash:55000,target:52000,plan:88},
+
+  // 6. Boomer with final salary pension — BTC curious, small dabble
+  {label:'Boomer · Final Salary + BTC Curious',
+   age:58,ret:63,sp:true,spAge:56,inc:90000,ni:35,spNI:30,
+   pen:380000,penM:300,spPen:120000,spPenM:200,
+   btc:0.1,btcMo:100,isa:62000,isaC:5000,
+   home:650000,mort:0,inv:28000,cash:40000,target:58000,plan:87},
+
+  // 7. Bitcoin native — BTC is the plan, minimal conventional assets
+  {label:'Bitcoin Native · BTC Is The Plan',
+   age:34,ret:50,sp:false,spAge:0,inc:85000,ni:12,spNI:0,
+   pen:22000,penM:400,spPen:0,spPenM:0,
+   btc:2.5,btcMo:800,isa:18000,isaC:8000,
+   home:0,mort:0,inv:5000,cash:8000,target:38000,plan:85},
+
+  // 8. High earner — diversified, wants to optimise not survive
+  {label:'High Earner · Diversified',
+   age:48,ret:58,sp:true,spAge:46,inc:185000,ni:25,spNI:22,
+   pen:320000,penM:2200,spPen:140000,spPenM:900,
+   btc:1.0,btcMo:600,isa:85000,isaC:20000,
+   home:720000,mort:150000,inv:65000,cash:45000,target:80000,plan:90},
+];
+let lastPIdx=-1;
+function fillStep(s){
+  let idx;do{idx=Math.floor(Math.random()*profiles.length);}while(idx===lastPIdx&&profiles.length>1);
+  lastPIdx=idx;const p=profiles[idx];
+  if(s===0){sv('myAge',p.age);sv('retireAge',p.ret);sv('hhIncome',p.inc);
+    const pills=document.getElementById('pg-spouse').querySelectorAll('.pill');
+    if(p.sp){pills[0].classList.remove('on');pills[1].classList.add('on');setSpouse(true);sv('spouseAge',p.spAge);}
+    else{pills[0].classList.add('on');pills[1].classList.remove('on');setSpouse(false);}
+  }
+  if(s===1){setEra('me','new');setEra('sp','new');sv('myNI',p.ni);sv('myPension',p.pen);sv('myPensionContrib',p.penM);
+    if(p.sp){sv('spouseNI',p.spNI);sv('spousePension',p.spPen);sv('spousePensionContrib',p.spPenM);}calcNI();}
+  if(s===2){sv('btcCoins',p.btc);sv('btcPrice',68000);sv('btcMonthly',p.btcMo);sv('altcoins',0);
+    sv('isaVal',p.isa);sv('isaContrib',p.isaC);sv('homeVal',p.home);sv('mortgageVal',p.mort);sv('investVal',p.inv);sv('cashVal',p.cash);updBtcVal();}
+  if(s===3){sv('targetIncome',p.target);sv('planUntil',p.plan);sv('inflation',2.5);sv('statePensionAge',67);hilite();}
+}
+function sv(id,val){
+  const e=document.getElementById(id);
+  if(!e) return;
+  e.value='';
+  e.value=val;
+}
+
+/* ══ EXPORT ══ */
+function fmtN(n){return '£'+Math.round(n).toLocaleString('en-GB');}
+
+function saveProfile(){
+  if(!_lastCalcD){ alert('Calculate your plan first!'); return; }
+  const D = _lastCalcD;
+  const defaultName = 'My Plan — ' + new Date().toLocaleDateString('en-GB');
+  const name = prompt('Name this profile:', defaultName);
+  if(name === null) return; // cancelled
+
+  const profile = {
+    profile: name || defaultName,
+    savedAt: new Date().toLocaleDateString('en-GB'),
+    // Identity
+    myAge: D.myAge, retireAge: D.retireAge, hhIncome: +gv('hhIncome')||0,
+    hasSpouse: hasSpouse, spouseAge: D.spouseAge,
+    // Pensions
+    myNI: D.myNI, spouseNI: D.spouseNI,
+    myPension: D.myPensionNow, myPensionContrib: D.myPensionM,
+    spousePension: D.spousePension, spousePensionContrib: D.spousePensionM,
+    // BTC
+    btcCoins: D.btcCoins, btcPrice: D.btcPrice,
+    btcMonthly: D.btcMo, altcoins: D.altcoins,
+    // Assets
+    isaVal: D.isaVal, isaContrib: D.isaContrib,
+    homeVal: D.homeVal, mortgageVal: D.mortgageVal,
+    investVal: D.investVal, cashVal: D.cashVal,
+    premBonds: D.premBonds, rentalIncome: D.rentalIncome,
+    // Lifestyle
+    targetIncome: D.targetToday, planUntil: D.planUntil,
+    inflation: D.inflation, statePensionAge: D.spaSPA,
+  };
+
+  const json = JSON.stringify(profile, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (name||defaultName).replace(/[^a-z0-9]/gi,'_').toLowerCase() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // Show toast
+  const t = document.getElementById('toast');
+  t.textContent = '💾 Profile saved!';
+  t.style.display = 'block';
+  setTimeout(()=>{ t.style.display='none'; t.textContent='✓ Copied!'; }, 2200);
+}
+
+function openExport(){
+  if(!lastResults){alert('Calculate your plan first!');return;}
+  const R=lastResults;
+  const lines=[
+    '╔══════════════════════════════════════════╗',
+    '  BitcoinSaveMe v2.3 — Results Summary',
+    '  Generated: '+new Date().toLocaleDateString('en-GB'),
+    '╚══════════════════════════════════════════╝',
+    '','── PROFILE ──────────────────────────────────',
+    'Type:              '+(R.hasSpouse?'Couple':'Solo'),
+    'Age:               '+R.myAge+' → Retire '+R.retireAge,
+    'Years to grow:     '+R.yTR,
+    'Partner age:       '+(R.hasSpouse?R.spouseAge:'N/A'),
+    'State pension age: '+R.spaSPA,'Plan until:        '+R.planUntil,'Inflation:         '+R.inflation+'%',
+    '','── PENSION ──────────────────────────────────',
+    'My state pension:      '+fmtN(R.mySP)+'/yr ('+R.myEra+' rules)',
+    'Partner state pension: '+(R.hasSpouse?fmtN(R.spSP)+'/yr':'N/A'),
+    'Total state pension:   '+fmtN(R.totalSP)+'/yr from age '+R.spaSPA,
+    'My private pension now:    £'+R.myPensionNow.toLocaleString('en-GB'),
+    'My pension at retirement:  '+fmtN(R.myPenAtR),
+    'Total pension pot:         '+fmtN(R.totalPen),
+    'Pension drawdown (4%):     '+fmtN(R.penDraw)+'/yr',
+    '','── ASSETS AT RETIREMENT ─────────────────────',
+    'Stocks & Shares ISA:  '+fmtN(R.isaAtR)+' ('+fmtN(R.isaDraw)+'/yr)',
+    'Investment portfolio: '+fmtN(R.invAtR)+' ('+fmtN(R.invAtR*0.04)+'/yr)',
+    'Cash & bonds:         '+fmtN(R.cashAtR)+' ('+fmtN(R.cashAtR*0.04)+'/yr)',
+    'Property equity:      '+fmtN(R.homeEq)+' (not in drawdown)',
+    '','── BITCOIN ──────────────────────────────────',
+    'BTC holdings:    '+R.btcCoins+' BTC @ £'+R.btcPrice.toLocaleString('en-GB'),
+    'Current value:   '+fmtN(R.btcNow),'Monthly DCA:     £'+(R.btcMo||0),
+    'Bear ('+R.btcRates.bear+'% p.a.): '+fmtN(R.btcBear),
+    'Base ('+R.btcRates.base+'% p.a.): '+fmtN(R.btcBase),
+    'Bull ('+R.btcRates.bull+'% p.a.): '+fmtN(R.btcBull),
+    '','── INCOME ANALYSIS ──────────────────────────',
+    'Target income (today):     £'+R.targetToday.toLocaleString('en-GB')+'/yr',
+    'Target income (inflated):  '+fmtN(R.targetAtR)+'/yr',
+    'Non-BTC income pre-SP:     '+fmtN(R.basePreSP)+'/yr',
+    'Non-BTC income post-SP:    '+fmtN(R.basePostSP)+'/yr',
+    'Gap pre-state-pension:     '+fmtN(R.gapPre)+'/yr x '+R.yearsPreSP+' yrs',
+    'Gap post-state-pension:    '+fmtN(R.gapPost)+'/yr x '+R.yearsPostSP+' yrs',
+    'TOTAL FUNDING GAP:         '+(R.totalGap<=0?'NONE — SURPLUS':fmtN(R.totalGap)),
+    '','── DCA OPTIMISER ────────────────────────────',
+    R.totalGap<=0
+      ?'No gap — all scenarios covered by existing assets.'
+      :('To cover gap of '+fmtN(R.totalGap)+' by retirement ('+R.yTR+' yrs):'),
+    R.totalGap>0?'Bear ('+R.btcRates.bear+'% p.a.): need £'+Math.round(R.dcaNeedBear)+'/mo DCA':'',
+    R.totalGap>0?'Base ('+R.btcRates.base+'% p.a.): need £'+Math.round(R.dcaNeedBase)+'/mo DCA':'',
+    R.totalGap>0?'Bull ('+R.btcRates.bull+'% p.a.): need £'+Math.round(R.dcaNeedBull)+'/mo DCA':'',
+    R.totalGap>0?'Current DCA: £'+R.btcMo+'/mo':'',
+    '','── VERDICT ──────────────────────────────────',
+    'Bear covers gap: '+(R.btcBear>=R.totalGap&&R.totalGap>0?'YES — surplus '+fmtN(R.btcBear-R.totalGap):(R.totalGap<=0?'N/A (no gap)':'NO — short '+fmtN(R.totalGap-R.btcBear))),
+    'Base covers gap: '+(R.btcBase>=R.totalGap&&R.totalGap>0?'YES — surplus '+fmtN(R.btcBase-R.totalGap):(R.totalGap<=0?'N/A (no gap)':'NO — short '+fmtN(R.totalGap-R.btcBase))),
+    'Bull covers gap: '+(R.btcBull>=R.totalGap&&R.totalGap>0?'YES — surplus '+fmtN(R.btcBull-R.totalGap):(R.totalGap<=0?'N/A (no gap)':'NO — short '+fmtN(R.totalGap-R.btcBull))),
+    'Total wealth (base):  '+fmtN(R.totalWealthBase),
+    '─────────────────────────────────────────────',
+    'BitcoinSaveMe v2.3 · Not financial advice',
+  ].filter(l=>l!=='');
+  document.getElementById('exportText').value=lines.join('\n');
+  document.getElementById('exportModal').classList.remove('hidden');
+}
+function closeExport(){document.getElementById('exportModal').classList.add('hidden');}
+function copyExport(){
+  const ta=document.getElementById('exportText');ta.select();ta.setSelectionRange(0,99999);
+  navigator.clipboard.writeText(ta.value).then(showToast).catch(()=>{document.execCommand('copy');showToast();});
+}
+function showToast(){const t=document.getElementById('toast');t.style.display='block';setTimeout(()=>t.style.display='none',2200);}
+document.getElementById('exportModal').addEventListener('click',function(e){if(e.target===this)closeExport();});
+
+/* ══ MODE — FIX: called on init ══ */
+function setMode(m){
+  mode=m;
+  document.getElementById('mb-simple').classList.toggle('on',m==='simple');
+  document.getElementById('mb-detail').classList.toggle('on',m==='detail');
+  document.getElementById('modeTag').textContent=m==='simple'?'⚡ Quick':'🔬 Detail';
+  document.getElementById('mdesc').textContent=m==='simple'?'Essentials only — we estimate the rest':'Full detail for maximum accuracy';
+  document.querySelectorAll('.d-only').forEach(el=>el.style.display=m==='detail'?'block':'none');
+}
+
+/* ══ NAV ══ */
+function nxt(){go(step+1)}function prv(){go(step-1)}
+function go(n){
+  document.getElementById('s'+step).classList.remove('on');
+  step=Math.max(0,Math.min(STEPS-1,n));
+  document.getElementById('s'+step).classList.add('on');
+  updProg();onEnter();window.scrollTo({top:0,behavior:'smooth'});
+}
+function updProg(){
+  for(let i=0;i<STEPS;i++){const e=document.getElementById('ps'+i);e.className='pseg'+(i<step?' done':i===step?' cur':'');}
+  document.getElementById('plbl').textContent='Step '+(step+1)+' of '+STEPS;
+}
+function onEnter(){
+  if(step===1){document.getElementById('spStatePensCard').style.display=hasSpouse?'block':'none';document.getElementById('spPrivPensCard').style.display=hasSpouse?'block':'none';calcNI();}
+  if(step===3)hilite();
+}
+
+/* ══ PILLS / TOGGLES ══ */
+function pclick(gid,btn){document.getElementById(gid).querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));btn.classList.add('on');}
+function setSpouse(v){hasSpouse=v;document.getElementById('partnerBlock').style.display=v?'block':'none';}
+function togSpRet(){document.getElementById('spRetCustom').style.display=gv('spouseRetires')==='custom'?'block':'none';}
+
+/* ══ ERA / NI ══ */
+function setEra(who,era){
+  if(who==='me'){myEra=era;['new','old'].forEach(e=>{const el=document.getElementById('era-'+e+'-me');el.classList.toggle('on',e===era);el.querySelector('.era-check').textContent=e===era?'✓':'';});document.getElementById('pre2016me').style.display=era==='old'?'block':'none';}
+  else{spEra=era;['new','old'].forEach(e=>{const el=document.getElementById('era-'+e+'-sp');if(!el)return;el.classList.toggle('on',e===era);el.querySelector('.era-check').textContent=e===era?'✓':'';});document.getElementById('pre2016sp').style.display=era==='old'?'block':'none';}
+  calcNI();
+}
+function calcNI(){
+  const myAge=+gv('myAge')||0,spAge=+gv('spouseAge')||0;
+  const myNI=Math.min(50,+gv('myNI')||0),spNI=Math.min(50,+gv('spouseNI')||0);
+  const myMax=myEra==='new'?35:30,spMax=spEra==='new'?35:30;
+  const spa=+gv('statePensionAge')||67;
+  const myRetire=+gv('retireAge')||60,spRetire=myRetire;
+  // NI contributions stop at retirement (not at state pension age)
+  // but voluntary contributions / credits may continue — use retirement age as cutoff
+  const myWorkYears=Math.max(0,Math.min(myRetire,spa)-myAge);
+  const spWorkYears=Math.max(0,Math.min(spRetire,spa)-spAge);
+  const myProj=Math.min(myMax,myNI+myWorkYears);
+  const spProj=Math.min(spMax,spNI+spWorkYears);
+  const myPct=myMax>0?myProj/myMax:0,myAmt=Math.round(myPct*(myEra==='new'?11502:8814));
+  const projEl=document.getElementById('myNIProj');if(projEl)projEl.textContent=myProj+' yrs ('+Math.round(myPct*100)+'%)';
+  const bar=document.getElementById('myNIBar');if(bar)bar.style.width=Math.min(100,myPct*100)+'%';
+  const barMax=document.getElementById('myNIBarMax');if(barMax)barMax.textContent=myMax+' yrs (full)';
+  const res=document.getElementById('myNIResult');
+  if(res&&myNI>0)res.textContent='Projected: £'+myAmt.toLocaleString('en-GB')+'/yr'+(myPct>=1?' ✓ Full entitlement':' ('+Math.round(myPct*100)+'% of max — '+Math.ceil(myMax-myProj)+' more years needed)');
+  const spEl=document.getElementById('spNIProj');if(spEl)spEl.textContent=spProj+' yrs ('+Math.round(spProj/spMax*100)+'%)';
+}
+
+/* ══ BTC ══ */
+function setScen(s,btn){
+  activeScen=s;
+  ['bear','base','bull'].forEach(x=>document.getElementById('st-'+x).classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('btcSlider').value=btcRates[s];
+  updSlider();
+}
+function updSlider(){
+  const v=+document.getElementById('btcSlider').value;
+  btcRates[activeScen]=v;
+  document.getElementById('btcRateHero').textContent=v+'% p.a.';
+  const l=document.getElementById('btcScenLbl');l.textContent=activeScen.toUpperCase();l.style.color=btcCols[activeScen];
+  document.getElementById('btcHintTxt').textContent=btcHints[activeScen];
+}
+function updBtcVal(){
+  const coins=+gv('btcCoins')||0,price=+gv('btcPrice')||68000;
+  document.getElementById('btcCurVal').textContent='Current value: £'+Math.round(coins*price).toLocaleString('en-GB');
+}
+
+/* ══ LIFESTYLE ══ */
+function hilite(){
+  const ti=+gv('targetIncome')||0;
+  const [mn,md,cm]=hasSpouse?[22400,34000,54500]:[13000,23300,37300];
+  ['ls-min','ls-mod','ls-com'].forEach(id=>document.getElementById(id).classList.remove('aon'));
+  if(ti<(mn+md)/2)document.getElementById('ls-min').classList.add('aon');
+  else if(ti<(md+cm)/2)document.getElementById('ls-mod').classList.add('aon');
+  else document.getElementById('ls-com').classList.add('aon');
+}
+
+/* ══ HELPERS ══ */
+function gv(id){const e=document.getElementById(id);return e?e.value:'';}
+const fmt=n=>'£'+Math.round(n).toLocaleString('en-GB');
+function fvPot(pv,r,y){return pv*Math.pow(1+r/100,y);}
+function fvMo(mo,r,y){if(r<=0)return mo*12*y;const rm=r/100/12,m=y*12;return mo*((Math.pow(1+rm,m)-1)/rm);}
+function fvAnn(ann,r,y){return fvMo(ann/12,r,y);}
+function spAmt(ni,era,serps){const max=era==='new'?35:30,base=era==='new'?11502:8814;return(Math.min(ni,max)/max)*base+(parseFloat(serps)||0);}
+function dChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+/* ══ DCA REVERSE CALCULATION ══
+   Finds monthly DCA needed so that fvPot(btcNow,r,y) + fvMo(dcaNeeded,r,y) >= gap
+   Solving: fvMo(x,r,y) = gap - fvPot(btcNow,r,y)
+   fvMo(x,r,y) = x * ((1+rm)^m - 1) / rm
+   x = target / ((1+rm)^m - 1) * rm
+*/
+function calcDCANeeded(btcNow,r,yrs,gap){
+  const potAtRetire=fvPot(btcNow,r,yrs);
+  const remaining=gap-potAtRetire;
+  if(remaining<=0)return 0; // existing BTC already covers it
+  if(r<=0)return remaining/(12*yrs);
+  const rm=r/100/12,m=yrs*12;
+  const fvFactor=(Math.pow(1+rm,m)-1)/rm;
+  return Math.max(0,remaining/fvFactor);
+}
+
+/* ══ READ INPUTS ══ */
+function readInputs(){
+  return{
+    myAge:+gv('myAge')||50,retireAge:+gv('retireAge')||60,spouseAge:+gv('spouseAge')||48,
+    spaSPA:+gv('statePensionAge')||67,planUntil:+gv('planUntil')||90,inflation:+gv('inflation')||2.5,
+    targetToday:+gv('targetIncome')||45000,myNI:Math.min(50,+gv('myNI')||0),
+    mySerps:myEra==='old'?(+gv('mySerps')||0):0,myCoOut:gv('myContractOut')==='yes'?0.15:0,
+    myPensionNow:+gv('myPension')||0,myPensionM:+gv('myPensionContrib')||0,
+    myPensionG:mode==='detail'?(+gv('myPensionGrowth')||5):5,
+    spouseNI:Math.min(50,+gv('spouseNI')||0),spouseSerps:spEra==='old'?(+gv('spouseSerps')||0):0,
+    spousePension:+gv('spousePension')||0,spousePensionM:+gv('spousePensionContrib')||0,
+    isaVal:+gv('isaVal')||0,isaContrib:+gv('isaContrib')||0,isaG:mode==='detail'?(+gv('isaGrowth')||7):7,
+    investVal:+gv('investVal')||0,cashVal:+gv('cashVal')||0,premBonds:+gv('premBonds')||0,
+    homeVal:+gv('homeVal')||0,mortgageVal:+gv('mortgageVal')||0,rentalIncome:+gv('rentalIncome')||0,
+    btcCoins:+gv('btcCoins')||0,btcPrice:+gv('btcPrice')||68000,btcMo:+gv('btcMonthly')||0,altcoins:+gv('altcoins')||0,
+  };
+}
+
+/* ══ QUICK RECALC ══ */
+function quickRecalc(){
+  const map={qe_retireAge:'retireAge',qe_targetIncome:'targetIncome',qe_btcCoins:'btcCoins',qe_btcMonthly:'btcMonthly',qe_penContrib:'myPensionContrib',qe_isaContrib:'isaContrib'};
+  Object.entries(map).forEach(([qid,mid])=>{const qv=document.getElementById(qid).value;if(qv!=='')document.getElementById(mid).value=qv;});
+  calc();
+}
+
+/* ══ CALCULATE ══ */
+function calc(){
+  const oldBanner=document.getElementById('validationBanner');
+  if(oldBanner) oldBanner.remove();
+  const D=readInputs();
+  const errs=validateInputs(D);
+  if(errs.length>0){ showValidationErrors(errs); return; }
+
+  const yTR=Math.max(0,D.retireAge-D.myAge);
+  const retDur=Math.max(1,D.planUntil-D.retireAge);
+  const yearsPreSP=Math.max(0,D.spaSPA-D.retireAge);
+  const yearsPostSP=Math.max(0,retDur-yearsPreSP);
+  const targetAtR=fvPot(D.targetToday,D.inflation,yTR);
+
+  const myNIFull=Math.min(myEra==='new'?35:30,D.myNI+Math.max(0,D.spaSPA-D.myAge));
+  const mySP=spAmt(myNIFull,myEra,D.mySerps*(1-D.myCoOut));
+  const mySPinf=fvPot(mySP,D.inflation,D.spaSPA-D.myAge);
+  let spSP=0,spSPinf=0;
+  if(hasSpouse){const spNIFull=Math.min(spEra==='new'?35:30,D.spouseNI+Math.max(0,D.spaSPA-D.spouseAge));spSP=spAmt(spNIFull,spEra,D.spouseSerps);spSPinf=fvPot(spSP,D.inflation,D.spaSPA-D.spouseAge);}
+  const totalSP=mySP+spSP,totalSPinf=mySPinf+spSPinf;
+
+  const myPenAtR=fvPot(D.myPensionNow,D.myPensionG,yTR)+fvMo(D.myPensionM,D.myPensionG,yTR);
+  const spPenAtR=hasSpouse?(fvPot(D.spousePension,5,yTR)+fvMo(D.spousePensionM,5,yTR)):0;
+  const totalPen=myPenAtR+spPenAtR,penDraw=totalPen*0.04;
+
+  const isaAtR=fvPot(D.isaVal,D.isaG,yTR)+fvAnn(D.isaContrib,D.isaG,yTR);
+  const isaDraw=isaAtR*0.04;
+  const invAtR=fvPot(D.investVal,6,yTR);
+  const cashAtR=fvPot(D.cashVal+D.premBonds,3.5,yTR);
+  const homeEq=Math.max(0,D.homeVal-D.mortgageVal);
+  const btcNow=D.btcCoins*D.btcPrice+D.altcoins;
+  const btcBear=fvPot(btcNow,btcRates.bear,yTR)+fvMo(D.btcMo,btcRates.bear,yTR);
+  const btcBase=fvPot(btcNow,btcRates.base,yTR)+fvMo(D.btcMo,btcRates.base,yTR);
+  const btcBull=fvPot(btcNow,btcRates.bull,yTR)+fvMo(D.btcMo,btcRates.bull,yTR);
+
+  const basePreSP=penDraw+isaDraw+invAtR*0.04+cashAtR*0.04+D.rentalIncome;
+  const basePostSP=basePreSP+totalSPinf;
+  const gapPre=Math.max(0,targetAtR-basePreSP);
+  const gapPost=Math.max(0,targetAtR-basePostSP);
+  const totalGap=gapPre*yearsPreSP+gapPost*yearsPostSP;
+  const totalWealthBase=totalPen+isaAtR+invAtR+cashAtR+btcBase;
+  const postSPSurplus=basePostSP-targetAtR;
+
+  // DCA calculations — reverse engineer needed monthly DCA for each scenario
+  const dcaNeedBear=calcDCANeeded(btcNow,btcRates.bear,yTR,totalGap);
+  const dcaNeedBase=calcDCANeeded(btcNow,btcRates.base,yTR,totalGap);
+  const dcaNeedBull=calcDCANeeded(btcNow,btcRates.bull,yTR,totalGap);
+
+  lastResults={hasSpouse,myAge:D.myAge,retireAge:D.retireAge,spouseAge:D.spouseAge,
+    spaSPA:D.spaSPA,planUntil:D.planUntil,inflation:D.inflation,yTR,myEra,spEra,
+    mySP,spSP,totalSP,myPensionNow:D.myPensionNow,myPenAtR,totalPen,penDraw,
+    isaAtR,isaDraw,invAtR,cashAtR,homeEq,btcCoins:D.btcCoins,btcPrice:D.btcPrice,
+    btcMo:D.btcMo,btcNow,btcRates:{...btcRates},btcBear,btcBase,btcBull,
+    targetToday:D.targetToday,targetAtR,basePreSP,basePostSP,gapPre,gapPost,
+    totalGap,yearsPreSP,yearsPostSP,totalWealthBase,dcaNeedBear,dcaNeedBase,dcaNeedBull};
+
+  _lastCalcD=D;
+
+  /* post-SP warning */
+  const postSpWarnEl=document.getElementById('postSpWarn');
+  if(gapPost>1000&&yearsPostSP>0){
+    postSpWarnEl.style.display='block';
+    document.getElementById('postSpWarnText').textContent='Your gap continues after state pension at age '+D.spaSPA+'. Even with '+fmt(totalSP)+'/yr state pension, you are still '+fmt(gapPost)+'/yr short of your target — persisting for '+yearsPostSP+' years (total: '+fmt(gapPost*yearsPostSP)+'). You need significant additional assets or a lower target.';
+  }else{postSpWarnEl.style.display='none';}
+
+  /* earliest retirement */
+  renderEarliest(D);
+
+  go(4);
+
+  // Inputs summary chips
+  const chips=[
+    {lbl:'Age',val:D.myAge+' → '+D.retireAge,cls:''},
+    {lbl:'',val:hasSpouse?'Couple':'Solo',cls:''},
+    {lbl:'Target',val:fmt(D.targetToday)+'/yr',cls:''},
+    {lbl:'BTC',val:D.btcCoins+'₿ + £'+D.btcMo+'/mo',cls:'chip-btc'},
+    {lbl:'Pension pot',val:fmt(D.myPensionNow),cls:''},
+    {lbl:'ISA',val:fmt(D.isaVal),cls:''},
+    {lbl:'Equity',val:fmt(homeEq),cls:''},
+  ].filter(c=>c.val&&c.val!=='£0'&&c.val!=='0₿ + £0/mo');
+  document.getElementById('inputChips').innerHTML=chips.map(c=>'<div class="chip '+c.cls+'">'+(c.lbl?'<span class="chip-lbl">'+c.lbl+' </span>':'')+c.val+'</div>').join('');
+
+  // Surplus banner
+  const sb=document.getElementById('surplusBanner');
+  if(postSPSurplus>2000&&yearsPostSP>0){
+    sb.style.display='block';
+    sb.innerHTML='<div class="banner banner-surplus"><div class="banner-icon">🎉</div><div><h4>Post-State-Pension Surplus</h4><p>From age '+D.spaSPA+', your projected income ('+fmt(basePostSP)+'/yr) exceeds your target by '+fmt(postSPSurplus)+'/yr. Consider drawing down less aggressively before '+D.spaSPA+' to preserve more capital.</p></div></div>';
+  }else{sb.style.display='none';}
+
+  // Long bridge warning
+  const bw=document.getElementById('bridgeWarnBanner');
+  if(yearsPreSP>8){
+    bw.style.display='block';
+    bw.innerHTML='<div class="banner banner-warn"><div class="banner-icon">⚠️</div><div><h4>Long Bridge Period: '+yearsPreSP+' Years</h4><p>Retiring at '+D.retireAge+' means '+yearsPreSP+' years before state pension at '+D.spaSPA+'. This is a high-risk window — your drawdown strategy and BTC plan need to cover this gap without running out. Model your worst case carefully.</p></div></div>';
+  }else{bw.style.display='none';}
+
+  // KPIs
+  document.getElementById('kpiGrid').innerHTML=[
+    {l:'Total Portfolio',v:fmt(totalWealthBase),s:'Pensions + ISA + BTC (base)',c:'cg'},
+    {l:'Private Pension Pot',v:fmt(totalPen),s:'4% draw = '+fmt(penDraw)+'/yr',c:'cb'},
+    {l:'State Pension(s)',v:fmt(totalSP)+'/yr',s:'From age '+D.spaSPA+(hasSpouse?' · combined':''),c:'cb'},
+    {l:'ISA at Retirement',v:fmt(isaAtR),s:fmt(isaDraw)+'/yr at 4%',c:'cp'},
+    {l:'Bitcoin (Base)',v:fmt(btcBase),s:btcRates.base+'% p.a. · '+yTR+' yrs',c:'cg'},
+    {l:'Funding Gap',v:totalGap<=0?'SURPLUS':fmt(totalGap),s:totalGap<=0?'Assets cover target!':'Pre-SP shortfall',c:totalGap<=0?'cc':'cr'},
+  ].map(k=>'<div class="kpi"><div class="kl">'+k.l+'</div><div class="kv '+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>').join('');
+
+  // Bridge
+  document.getElementById('bridgeDesc').innerHTML=totalGap<=0
+    ?'Your non-Bitcoin assets already cover your target. Bitcoin is <strong>pure upside</strong> on top of a solid plan.'
+    :'Funding gap of <strong>'+fmt(totalGap)+'</strong> — mainly during the '+yearsPreSP+' years before state pension at '+D.spaSPA+'. Does your BTC cover it?';
+  document.getElementById('scenGrid').innerHTML=[
+    {lbl:'Bear',cls:'sc-bear',val:btcBear,rate:btcRates.bear},
+    {lbl:'Base',cls:'sc-base',val:btcBase,rate:btcRates.base},
+    {lbl:'Bull',cls:'sc-bull',val:btcBull,rate:btcRates.bull},
+  ].map(s=>{
+    const ok=totalGap<=0||s.val>=totalGap,surplus=s.val-totalGap;
+    return '<div class="scard '+s.cls+'"><div class="scl">'+s.lbl+'</div><div class="scv">'+fmt(s.val)+'</div><div class="scr2">'+s.rate+'% p.a. · '+yTR+' yrs</div><div class="scs" style="color:'+(ok?'var(--green)':'var(--red)')+'">'+
+      (ok?(totalGap<=0?'✓ Bonus '+fmt(s.val):'✓ +'+fmt(surplus)):('⚠ Short '+fmt(-surplus)))+'</div></div>';
+  }).join('');
+
+  // DCA OPTIMISER
+  const dcaEl=document.getElementById('dcaOptimiser');
+  if(totalGap>0){
+    const currentDCA=D.btcMo||0;
+    const maxNeed=Math.max(dcaNeedBear,dcaNeedBase,dcaNeedBull,1);
+    const rows=[
+      {cls:'dca-bear',scen:'Bear',rate:btcRates.bear,need:dcaNeedBear},
+      {cls:'dca-base',scen:'Base',rate:btcRates.base,need:dcaNeedBase},
+      {cls:'dca-bull',scen:'Bull',rate:btcRates.bull,need:dcaNeedBull},
+    ].map(r=>{
+      const already=currentDCA>0&&currentDCA>=r.need;
+      const pct=Math.min(100,currentDCA>0&&r.need>0?(currentDCA/r.need*100):0);
+      const statusTxt=r.need<=0?'✓ Already covered by existing BTC':(already?'✓ Your current DCA covers this':'Need £'+Math.round(r.need-currentDCA)+'/mo more');
+      const statusCol=r.need<=0||already?'var(--green)':'var(--red)';
+      return '<div class="dca-row '+r.cls+'">'
+        +'<div class="dca-scen">'+r.scen+'</div>'
+        +'<div class="dca-rate">'+r.rate+'% p.a.</div>'
+        +'<div class="dca-amount">'+(r.need<=0?'£0':('£'+Math.round(r.need).toLocaleString('en-GB')))+'/mo</div>'
+        +'<div class="dca-status" style="color:'+statusCol+'">'+statusTxt+'</div>'
+        +'<div class="dca-bar-wrap"><div class="dca-bar-bg"><div class="dca-bar-fill" style="width:'+Math.min(100,r.need<=0?100:pct)+'%"></div></div></div>'
+        +'</div>';
+    }).join('');
+    dcaEl.style.display='block';
+    dcaEl.innerHTML='<div class="dca-card">'
+      +'<div class="dca-title"><svg width="24" height="24" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#f7931a"/><path d="M46.1 27.3c.6-4.2-2.6-6.5-7-8l1.4-5.7-3.5-.9-1.4 5.5c-.9-.2-1.9-.4-2.8-.7l1.4-5.6-3.5-.9-1.4 5.7c-.8-.2-1.5-.4-2.2-.5v0l-4.8-1.2-.9 3.7s2.6.6 2.5.6c1.4.4 1.7 1.3 1.6 2l-1.6 6.4c.1 0 .2.1.4.1-.1 0-.3-.1-.4-.1l-2.2 8.9c-.2.4-.6 1-1.6.8.0.1-2.5-.6-2.5-.6l-1.7 4 4.5 1.1c.8.2 1.7.4 2.5.7l-1.5 5.8 3.5.9 1.4-5.7c.9.2 1.9.5 2.8.7l-1.4 5.6 3.5.9 1.5-5.8c6 1.1 10.5.7 12.4-4.7 1.5-4.3-.1-6.8-3.2-8.4 2.3-.5 4-2 4.4-5zm-7.9 11.1c-1.1 4.3-8.4 2-10.8 1.4l1.9-7.7c2.4.6 10.1 1.8 8.9 6.3zm1.1-11.2c-1 4-7.1 1.9-9.1 1.4l1.7-7c2 .5 8.4 1.5 7.4 5.6z" fill="white"/></svg>BTC DCA Optimiser</div>'
+      +'<div class="dca-sub">You have a gap of <strong>'+fmt(totalGap)+'</strong> to bridge. Here\'s exactly how much monthly BTC DCA you need — at each growth scenario — to close it over '+yTR+' years. The bar shows how far your current DCA gets you.</div>'
+      +'<div class="dca-rows">'+rows+'</div>'
+      +'<div class="dca-current-line">💸 Your current DCA: <span class="dca-current-val">£'+currentDCA.toLocaleString('en-GB')+'/mo</span>'
+      +(currentDCA===0?' — <span style="color:var(--red)">Not DCAing yet. Even small amounts compound significantly over '+yTR+' years.</span>':currentDCA>=dcaNeedBase?' — <span style="color:var(--green)">✓ You\'re already covered on base scenario</span>':' — <span style="color:var(--btc)">Increase by £'+Math.round(dcaNeedBase-currentDCA)+'/mo to cover base scenario</span>')
+      +'</div></div>';
+  }else{
+    dcaEl.style.display='block';
+    dcaEl.innerHTML='<div class="dca-card"><div class="dca-title"><svg width="24" height="24" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#f7931a"/><path d="M46.1 27.3c.6-4.2-2.6-6.5-7-8l1.4-5.7-3.5-.9-1.4 5.5c-.9-.2-1.9-.4-2.8-.7l1.4-5.6-3.5-.9-1.4 5.7c-.8-.2-1.5-.4-2.2-.5v0l-4.8-1.2-.9 3.7s2.6.6 2.5.6c1.4.4 1.7 1.3 1.6 2l-1.6 6.4c.1 0 .2.1.4.1-.1 0-.3-.1-.4-.1l-2.2 8.9c-.2.4-.6 1-1.6.8.0.1-2.5-.6-2.5-.6l-1.7 4 4.5 1.1c.8.2 1.7.4 2.5.7l-1.5 5.8 3.5.9 1.4-5.7c.9.2 1.9.5 2.8.7l-1.4 5.6 3.5.9 1.5-5.8c6 1.1 10.5.7 12.4-4.7 1.5-4.3-.1-6.8-3.2-8.4 2.3-.5 4-2 4.4-5zm-7.9 11.1c-1.1 4.3-8.4 2-10.8 1.4l1.9-7.7c2.4.6 10.1 1.8 8.9 6.3zm1.1-11.2c-1 4-7.1 1.9-9.1 1.4l1.7-7c2 .5 8.4 1.5 7.4 5.6z" fill="white"/></svg>BTC DCA Optimiser</div>'
+      +'<div class="dca-sub">No gap to bridge — your existing assets cover your target without Bitcoin. Any DCA you do is <strong>wealth acceleration</strong>, not a lifeline. Keep stacking!</div>'
+      +'<div class="dca-current-line">💸 Current DCA: <span class="dca-current-val">£'+(D.btcMo||0).toLocaleString('en-GB')+'/mo</span> → projected '+fmt(btcBase)+' at retirement (base). Pure bonus on top of a solid plan.</div></div>';
+  }
+
+  // Timeline
+  document.getElementById('phaseBar').innerHTML='<div class="pseg2" style="width:'+Math.round(yearsPreSP/retDur*100)+'%;background:linear-gradient(90deg,var(--accent2),var(--btc))"></div><div class="pseg2" style="width:'+Math.round(yearsPostSP/retDur*100)+'%;background:linear-gradient(90deg,var(--green),rgba(34,197,94,.35))"></div>';
+  document.getElementById('phaseEvs').innerHTML='<div class="pev"><strong>'+D.retireAge+'</strong>Retire</div><div class="pev"><strong>'+D.spaSPA+'</strong>State Pension</div><div class="pev"><strong>'+D.planUntil+'</strong>Plan ends</div>';
+
+  // Breakdown
+  document.getElementById('bkTable').innerHTML=[
+    ['Private Pension(s)',fmt(totalPen),fmt(penDraw)+'/yr'],
+    ['Stocks & Shares ISA',fmt(isaAtR),fmt(isaDraw)+'/yr'],
+    ['Investment Portfolio',fmt(invAtR),fmt(invAtR*0.04)+'/yr'],
+    ['Cash & Bonds',fmt(cashAtR),fmt(cashAtR*0.04)+'/yr'],
+    D.rentalIncome>0?['Rental Income','—',fmt(D.rentalIncome)+'/yr']:null,
+    ['State Pension(s)','—',fmt(totalSP)+'/yr from '+D.spaSPA],
+    ['Property Equity',fmt(homeEq),'Not in drawdown'],
+    ['Bitcoin Bear/Base/Bull',fmt(btcBear)+' / '+fmt(btcBase),'/ '+fmt(btcBull)],
+    ['Your Target','',fmt(targetAtR)+'/yr (inflated)'],
+  ].filter(Boolean).map(r=>'<div class="bkrow"><span class="bkl">'+r[0]+'</span><span class="bkp">'+r[1]+'</span><span class="bki">'+r[2]+'</span></div>').join('');
+
+  // Tips
+  const tips=[];
+  if(totalGap>0&&btcBase<totalGap)tips.push({i:'💰',h:'Increase BTC DCA',p:'Need £'+Math.round(dcaNeedBase)+'/mo to cover your gap on the base scenario. You\'re currently at £'+D.btcMo+'/mo.'});
+  if(totalPen<D.targetToday*10)tips.push({i:'🏦',h:'Boost Pension Contributions',p:'Pension pot is light relative to target. Salary sacrifice saves NI — employer match is free money.'});
+  if(isaAtR<50000)tips.push({i:'📈',h:'Max Your ISA',p:'S&S ISA growth is fully tax-free. £20k/yr limit — unused allowance is gone forever.'});
+  if(yearsPreSP>8)tips.push({i:'⏳',h:'Long Bridge: '+yearsPreSP+' Yrs',p:'Retiring early creates a long pre-SP window. Plan your drawdown carefully — run the worst case.'});
+  if(mySP<11502*0.85)tips.push({i:'📋',h:'Fill NI Gaps',p:'Short of full state pension. Buying missing years costs ~£800 each — excellent ROI.'});
+  if(homeEq>200000)tips.push({i:'🏠',h:'Property Equity: '+fmt(homeEq),p:'Downsizing could release significant tax-free capital. Worth modelling as a retirement option.'});
+  if(postSPSurplus>5000)tips.push({i:'📉',h:'Post-SP Over-funded',p:'After state pension you\'ll have '+fmt(postSPSurplus)+'/yr surplus. Consider drawing less pre-'+D.spaSPA+' to preserve capital.'});
+  if(yTR>=10)tips.push({i:'₿',h:'HODl: '+yTR+' Years to Compound',p:'Time is your biggest BTC edge. DCA removes timing stress. Don\'t touch it until you need it.'});
+  if(tips.length===0)tips.push({i:'✅',h:'Strong Plan',p:'Well-funded across scenarios. Review annually and consult an IFA to optimise tax efficiency.'});
+  document.getElementById('tipGrid').innerHTML=tips.slice(0,6).map(t=>'<div class="tip"><div class="tip-icon">'+t.i+'</div><h4>'+t.h+'</h4><p>'+t.p+'</p></div>').join('');
+
+  // Quick edit prefill
+  sv('qe_retireAge',D.retireAge);sv('qe_targetIncome',D.targetToday);
+  sv('qe_btcCoins',D.btcCoins);sv('qe_btcMonthly',D.btcMo);
+  sv('qe_penContrib',D.myPensionM);sv('qe_isaContrib',D.isaContrib);
+
+  setTimeout(()=>drawCharts(D,yTR,btcNow,btcBear,btcBase,btcBull,totalGap,basePreSP,basePostSP,targetAtR),150);
+}
+
+/* ══ CHARTS ══ */
+function drawCharts(D,yTR,btcNow,btcBear,btcBase,btcBull,totalGap,basePreSP,basePostSP,targetAtR){
+  const baseOpts={responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:'#8891ab',font:{family:'DM Sans',size:11}}},tooltip:{callbacks:{label:ctx=>' £'+Math.round(ctx.raw).toLocaleString('en-GB')}}},
+    scales:{x:{ticks:{color:'#4e5470',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#4e5470',font:{size:10},callback:v=>v>=1e6?'£'+(v/1e6).toFixed(1)+'M':'£'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,.06)'}}}};
+  const years=Array.from({length:yTR+1},(_,i)=>D.myAge+i);
+  dChart('growthChart');
+  charts.growthChart=new Chart(document.getElementById('growthChart'),{type:'line',data:{labels:years,datasets:[
+    {label:'Pension',data:years.map((_,i)=>Math.round(fvPot(D.myPensionNow,D.myPensionG,i)+fvMo(D.myPensionM,D.myPensionG,i))),borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.08)',fill:true,tension:.4,pointRadius:0,borderWidth:2},
+    {label:'ISA',data:years.map((_,i)=>Math.round(fvPot(D.isaVal,D.isaG,i)+fvAnn(D.isaContrib,D.isaG,i))),borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,.06)',fill:true,tension:.4,pointRadius:0,borderWidth:2},
+    {label:'BTC (base)',data:years.map((_,i)=>Math.round(fvPot(btcNow,btcRates.base,i)+fvMo(D.btcMo,btcRates.base,i))),borderColor:'#f7931a',backgroundColor:'rgba(247,147,26,.08)',fill:true,tension:.4,pointRadius:0,borderWidth:2},
+  ]},options:baseOpts});
+  dChart('btcChart');
+  charts.btcChart=new Chart(document.getElementById('btcChart'),{type:'bar',
+    data:{labels:['🐻 Bear','📈 Base','🚀 Bull','Gap'],datasets:[{data:[btcBear,btcBase,btcBull,Math.max(totalGap,1000)],backgroundColor:['rgba(239,68,68,.7)','rgba(247,147,26,.7)','rgba(34,197,94,.7)','rgba(96,165,250,.4)'],borderColor:['#ef4444','#f7931a','#22c55e','#60a5fa'],borderWidth:1,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' £'+Math.round(ctx.raw).toLocaleString('en-GB')}}},
+      scales:{x:{ticks:{color:'#8891ab',font:{size:11}},grid:{color:'rgba(255,255,255,.04)'}},y:{type:'logarithmic',ticks:{color:'#4e5470',font:{size:10},callback:v=>{if(v>=1e9)return'£'+(v/1e9).toFixed(1)+'B';if(v>=1e6)return'£'+(v/1e6).toFixed(1)+'M';if(v>=1e3)return'£'+(v/1e3).toFixed(0)+'k';return'£'+v;}},grid:{color:'rgba(255,255,255,.06)'}}}}});
+  dChart('incomeChart');
+  charts.incomeChart=new Chart(document.getElementById('incomeChart'),{type:'bar',
+    data:{labels:['Bridge (no SP)','Post-State Pension','Your Target'],datasets:[{data:[Math.round(basePreSP),Math.round(basePostSP),Math.round(targetAtR)],backgroundColor:['rgba(247,147,26,.65)','rgba(34,197,94,.65)','rgba(240,180,41,.35)'],borderColor:['#f7931a','#22c55e','#f0b429'],borderWidth:1,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' £'+Math.round(ctx.raw).toLocaleString('en-GB')+'/yr'}}},indexAxis:'y',
+      scales:{x:{ticks:{color:'#4e5470',font:{size:10},callback:v=>'£'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,.06)'}},y:{ticks:{color:'#8891ab',font:{size:11}},grid:{color:'rgba(255,255,255,.04)'}}}}});
+}
+
+
+
+/* ══════════════════════════════════════
+   INPUT VALIDATION
+══════════════════════════════════════ */
+function validateInputs(D){
+  const errs=[];
+  if(!D.myAge||D.myAge<18||D.myAge>80) errs.push('Your age must be between 18 and 80.');
+  if(!D.retireAge||D.retireAge<=D.myAge) errs.push('Retirement age must be greater than your current age.');
+  if(D.retireAge>80) errs.push('Retirement age must be 80 or under.');
+  if(D.retireAge-D.myAge>50) errs.push('Gap between your age and retirement age cannot exceed 50 years — check your values.');
+  if(hasSpouse&&(!D.spouseAge||D.spouseAge<18||D.spouseAge>85)) errs.push('Partner age must be between 18 and 85.');
+  if(D.planUntil<=D.retireAge) errs.push('"Plan until" age must be after your retirement age.');
+  if(D.planUntil>110) errs.push('"Plan until" age must be 110 or under.');
+  if(D.inflation<0||D.inflation>20) errs.push('Inflation must be between 0% and 20%.');
+  if(!D.targetToday||D.targetToday<1000) errs.push('Target retirement income must be at least £1,000/yr.');
+  if(D.targetToday>2000000) errs.push('Target income looks too high (max £2,000,000) — please check.');
+  if(D.myNI>50) errs.push('NI qualifying years cannot exceed 50.');
+  if(hasSpouse&&D.spouseNI>50) errs.push('Partner NI years cannot exceed 50.');
+  return errs;
+}
+
+function showValidationErrors(errs){
+  const old=document.getElementById('validationBanner');
+  if(old) old.remove();
+  const b=document.createElement('div');
+  b.id='validationBanner';
+  b.style.cssText='background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:14px;padding:16px 20px;margin-bottom:16px;animation:rise .3s ease';
+  b.innerHTML='<div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px">⚠️ Please fix these before calculating:</div>'+
+    errs.map(e=>'<div style="font-size:13px;color:var(--text2);padding:3px 0;display:flex;gap:8px"><span style="color:var(--red);flex-shrink:0">•</span>'+e+'</div>').join('');
+  const step3=document.getElementById('s3');
+  if(step3) step3.prepend(b);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════
+   JSON IMPORT
+══════════════════════════════════════ */
+function importProfile(){
+  const raw=document.getElementById('importJson').value.trim();
+  const errEl=document.getElementById('importErr');
+  const okEl=document.getElementById('importOk');
+  errEl.style.display='none';okEl.style.display='none';
+  resetAllFields();
+    let p;
+  try{p=JSON.parse(raw);}catch(e){errEl.style.display='block';return;}
+  const map={myAge:'myAge',retireAge:'retireAge',hhIncome:'hhIncome',spouseAge:'spouseAge',myNI:'myNI',spouseNI:'spouseNI',myPension:'myPension',myPensionContrib:'myPensionContrib',spousePension:'spousePension',spousePensionContrib:'spousePensionContrib',btcCoins:'btcCoins',btcMonthly:'btcMonthly',btcPrice:'btcPrice',altcoins:'altcoins',isaVal:'isaVal',isaContrib:'isaContrib',homeVal:'homeVal',mortgageVal:'mortgageVal',investVal:'investVal',cashVal:'cashVal',targetIncome:'targetIncome',planUntil:'planUntil',inflation:'inflation',statePensionAge:'statePensionAge',rentalIncome:'rentalIncome',premBonds:'premBonds'};
+  Object.entries(map).forEach(([pk,fid])=>{if(p[pk]!==undefined)sv(fid,p[pk]);});
+  if(p.hasSpouse!==undefined){
+    const pills=document.getElementById('pg-spouse').querySelectorAll('.pill');
+    if(p.hasSpouse){pills[0].classList.remove('on');pills[1].classList.add('on');setSpouse(true);}
+    else{pills[0].classList.add('on');pills[1].classList.remove('on');setSpouse(false);}
+  }
+  updBtcVal();
+  okEl.style.display='block';
+  okEl.textContent='✓ '+(p.profile||'Profile')+' imported!';
+  const jb=document.getElementById('importJumpBtn');if(jb)jb.style.display='inline-block';
+}
+function clearImport(){
+  document.getElementById('importJson').value='';
+  document.getElementById('importErr').style.display='none';
+  document.getElementById('importOk').style.display='none';
+}
+
+/* ══════════════════════════════════════
+   EARLIEST RETIREMENT
+══════════════════════════════════════ */
+let _lastCalcD=null;
+
+function findEarliestRetirement(D,mode){
+  const rate=mode==='bear'?btcRates.bear:mode==='base'?btcRates.base:0;
+  const useBtc=mode!=='nobtc';
+  for(let age=D.myAge+1;age<=70;age++){
+    const yTR=Math.max(0,age-D.myAge);
+    const targetAtR=fvPot(D.targetToday,D.inflation,yTR);
+    const yearsPreSP=Math.max(0,D.spaSPA-age);
+    const myPenAtR=fvPot(D.myPensionNow,D.myPensionG,yTR)+fvMo(D.myPensionM,D.myPensionG,yTR);
+    const spPenAtR=hasSpouse?(fvPot(D.spousePension,5,yTR)+fvMo(D.spousePensionM,5,yTR)):0;
+    const penDraw=(myPenAtR+spPenAtR)*0.04;
+    const isaAtR=fvPot(D.isaVal,D.isaG,yTR)+fvAnn(D.isaContrib,D.isaG,yTR);
+    const invAtR=fvPot(D.investVal,6,yTR);
+    const cashAtR=fvPot(D.cashVal+D.premBonds,3.5,yTR);
+    const baseIncome=penDraw+isaAtR*0.04+invAtR*0.04+cashAtR*0.04+D.rentalIncome;
+    const myNIFull=Math.min(myEra==='new'?35:30,D.myNI+Math.max(0,D.spaSPA-D.myAge));
+    const mySPinf=fvPot(spAmt(myNIFull,myEra,D.mySerps*(1-D.myCoOut)),D.inflation,D.spaSPA-D.myAge);
+    let spSPinf=0;
+    if(hasSpouse){const spNIFull=Math.min(spEra==='new'?35:30,D.spouseNI+Math.max(0,D.spaSPA-D.spouseAge));spSPinf=fvPot(spAmt(spNIFull,spEra,D.spouseSerps),D.inflation,D.spaSPA-D.spouseAge);}
+    const gapPre=Math.max(0,targetAtR-baseIncome)*yearsPreSP;
+    const gapPost=Math.max(0,targetAtR-(baseIncome+mySPinf+spSPinf))*Math.max(0,(D.planUntil-age)-yearsPreSP);
+    const totalGap=gapPre+gapPost;
+    if(!useBtc){if(totalGap<=0)return age;}
+    else{
+      const btcNow=D.btcCoins*D.btcPrice+D.altcoins;
+      const btcVal=fvPot(btcNow,rate,yTR)+fvMo(D.btcMo,rate,yTR);
+      if(totalGap<=0||btcVal>=totalGap)return age;
+    }
+  }
+  return null;
+}
+
+function renderEarliest(D){
+  const current=D.retireAge;
+  const bearAge=findEarliestRetirement(D,'bear');
+  const baseAge=findEarliestRetirement(D,'base');
+  const nobtcAge=findEarliestRetirement(D,'nobtc');
+  document.getElementById('earliestSub').innerHTML='Based on your assets and BTC position, here\'s the earliest you could retire under each scenario. Your current plan: <strong style="color:var(--text)">age '+current+'</strong>.';
+  document.getElementById('earliestGrid').innerHTML=[
+    {cls:'ei-bear',label:'🐻 Bear · '+btcRates.bear+'% p.a.',age:bearAge},
+    {cls:'ei-base',label:'📈 Base · '+btcRates.base+'% p.a.',age:baseAge},
+    {cls:'ei-none',label:'💼 Without BTC',age:nobtcAge},
+  ].map(item=>{
+    const saving=item.age?(current-item.age):null;
+    const savingCol=saving>0?'var(--green)':saving===0?'var(--text2)':'var(--red)';
+    const savingTxt=item.age===null?'Not achievable by 70':(saving>0?saving+' yr'+(saving>1?'s':'')+' earlier than planned':(saving===0?'Same as your plan':'Later than your plan — need more time'));
+    return '<div class="earliest-item '+item.cls+'">'+
+      '<div class="ei-label">'+item.label+'</div>'+
+      '<div class="ei-age">'+(item.age?'Age '+item.age:'70+')+'</div>'+
+      '<div class="ei-saving" style="color:'+savingCol+'">'+savingTxt+'</div>'+
+      '</div>';
+  }).join('');
+  const slider=document.getElementById('retireSlider');
+  slider.min=Math.max(D.myAge+1,45);slider.max=70;slider.value=current;
+  onRetireSlider();
+}
+
+function onRetireSlider(){
+  const age=+document.getElementById('retireSlider').value;
+  document.getElementById('retSliderAge').textContent='Retire at Age '+age;
+  if(!_lastCalcD){document.getElementById('retSliderResult').textContent='Calculate your plan first';return;}
+  const D=_lastCalcD;
+  const yTR=Math.max(0,age-D.myAge);
+  const targetAtR=fvPot(D.targetToday,D.inflation,yTR);
+  const yearsPreSP=Math.max(0,D.spaSPA-age);
+  const myPenAtR=fvPot(D.myPensionNow,D.myPensionG,yTR)+fvMo(D.myPensionM,D.myPensionG,yTR);
+  const spPenAtR=hasSpouse?(fvPot(D.spousePension,5,yTR)+fvMo(D.spousePensionM,5,yTR)):0;
+  const penDraw=(myPenAtR+spPenAtR)*0.04;
+  const isaAtR=fvPot(D.isaVal,D.isaG,yTR)+fvAnn(D.isaContrib,D.isaG,yTR);
+  const invAtR=fvPot(D.investVal,6,yTR);
+  const cashAtR=fvPot(D.cashVal+D.premBonds,3.5,yTR);
+  const baseIncome=penDraw+isaAtR*0.04+invAtR*0.04+cashAtR*0.04+D.rentalIncome;
+  const myNIFull=Math.min(myEra==='new'?35:30,D.myNI+Math.max(0,D.spaSPA-D.myAge));
+  const mySPinf=fvPot(spAmt(myNIFull,myEra,D.mySerps*(1-D.myCoOut)),D.inflation,D.spaSPA-D.myAge);
+  let spSPinf=0;if(hasSpouse){const spNIFull=Math.min(spEra==='new'?35:30,D.spouseNI+Math.max(0,D.spaSPA-D.spouseAge));spSPinf=fvPot(spAmt(spNIFull,spEra,D.spouseSerps),D.inflation,D.spaSPA-D.spouseAge);}
+  const gapPre=Math.max(0,targetAtR-baseIncome)*yearsPreSP;
+  const gapPost=Math.max(0,targetAtR-(baseIncome+mySPinf+spSPinf))*Math.max(0,(D.planUntil-age)-yearsPreSP);
+  const totalGap=gapPre+gapPost;
+  const btcNow=D.btcCoins*D.btcPrice+D.altcoins;
+  const btcBase=fvPot(btcNow,btcRates.base,yTR)+fvMo(D.btcMo,btcRates.base,yTR);
+  const btcBear=fvPot(btcNow,btcRates.bear,yTR)+fvMo(D.btcMo,btcRates.bear,yTR);
+  const baseCovered=totalGap<=0||btcBase>=totalGap;
+  const bearCovered=totalGap<=0||btcBear>=totalGap;
+  let txt;
+  if(totalGap<=0)txt='<span style="color:var(--green)">✓ No gap — assets cover target without BTC.</span>';
+  else if(baseCovered&&bearCovered)txt='<span style="color:var(--green)">✓ Bear AND base BTC cover gap of '+fmt(totalGap)+'.</span> Strong.';
+  else if(baseCovered)txt='<span style="color:var(--btc)">📈 Base covers gap of '+fmt(totalGap)+'</span> — bear short by '+fmt(totalGap-btcBear)+'. Moderate risk.';
+  else txt='<span style="color:var(--red)">⚠ Gap of '+fmt(totalGap)+' not covered at base.</span> Short: '+fmt(totalGap-btcBase)+'.';
+  document.getElementById('retSliderSub').textContent=yTR+' yrs to grow · Bridge: '+yearsPreSP+' yrs before SP';
+  document.getElementById('retSliderResult').innerHTML=txt;
+}
+
+/* ══════════════════════════════════════
+   OPTIMISE FOR ME
+══════════════════════════════════════ */
+let optMode='earliest';
+function setOptMode(m,btn){
+  optMode=m;
+  document.querySelectorAll('.opt-mode').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('optResult').classList.remove('show');
+}
+function runOptimiser(){
+  if(!_lastCalcD){alert('Calculate your plan first!');return;}
+  const D=_lastCalcD;
+  let result={};
+  const btcNow=D.btcCoins*D.btcPrice+D.altcoins;
+
+  if(optMode==='earliest'){
+    const baseAge=findEarliestRetirement(D,'base');
+    const bearAge=findEarliestRetirement(D,'bear');
+    const saving=baseAge?Math.max(0,D.retireAge-baseAge):0;
+    result={
+      rows:[
+        {lbl:'Earliest retirement (base)',from:'Age '+D.retireAge,to:baseAge?'Age '+baseAge:'Age 70+',hi:true},
+        {lbl:'Earliest retirement (bear)',from:'—',to:bearAge?'Age '+bearAge:'Age 70+'},
+        {lbl:'Years you could gain',from:'—',to:saving>0?saving+' year'+(saving>1?'s':'')+' earlier':'Already near-optimal'},
+        {lbl:'BTC & other assets',from:'—',to:'Unchanged — just retire sooner'},
+      ],
+      why:'At base scenario ('+btcRates.base+'% p.a.), '+(baseAge&&saving>0?'you could retire '+saving+' year'+(saving>1?'s':'')+' earlier at age '+baseAge+'. Bear-safe retirement: age '+(bearAge||'70+')+'.':(saving===0?'your current retirement age is already optimal.':'retirement by 70 isn\'t achievable on current assets.'))
+    };
+  }
+  else if(optMode==='lowestdca'){
+    const yTR=Math.max(0,D.retireAge-D.myAge);
+    // Binary search minimum DCA
+    function gapAtDCA(dca){
+      const targetAtR=fvPot(D.targetToday,D.inflation,yTR);
+      const myPenAtR=fvPot(D.myPensionNow,D.myPensionG,yTR)+fvMo(D.myPensionM,D.myPensionG,yTR);
+      const spPenAtR=hasSpouse?(fvPot(D.spousePension,5,yTR)+fvMo(D.spousePensionM,5,yTR)):0;
+      const penDraw=(myPenAtR+spPenAtR)*0.04;
+      const isaAtR=fvPot(D.isaVal,D.isaG,yTR)+fvAnn(D.isaContrib,D.isaG,yTR);
+      const invAtR=fvPot(D.investVal,6,yTR);
+      const cashAtR=fvPot(D.cashVal+D.premBonds,3.5,yTR);
+      const baseIncome=penDraw+isaAtR*0.04+invAtR*0.04+cashAtR*0.04+D.rentalIncome;
+      const myNIFull=Math.min(myEra==='new'?35:30,D.myNI+Math.max(0,D.spaSPA-D.myAge));
+      const mySPinf=fvPot(spAmt(myNIFull,myEra,D.mySerps*(1-D.myCoOut)),D.inflation,D.spaSPA-D.myAge);
+      let spSPinf=0;if(hasSpouse){const s=Math.min(spEra==='new'?35:30,D.spouseNI+Math.max(0,D.spaSPA-D.spouseAge));spSPinf=fvPot(spAmt(s,spEra,D.spouseSerps),D.inflation,D.spaSPA-D.spouseAge);}
+      const yearsPreSP=Math.max(0,D.spaSPA-D.retireAge);
+      const gp=Math.max(0,targetAtR-baseIncome)*yearsPreSP;
+      const gpost=Math.max(0,targetAtR-(baseIncome+mySPinf+spSPinf))*Math.max(0,(D.planUntil-D.retireAge)-yearsPreSP);
+      const tg=gp+gpost;
+      const bv=fvPot(btcNow,btcRates.base,yTR)+fvMo(dca,btcRates.base,yTR);
+      return tg<=0?0:tg-bv;
+    }
+    let lo=0,hi=5000,best=D.btcMo;
+    for(let i=0;i<20;i++){const mid=Math.round((lo+hi)/2);if(gapAtDCA(mid)<=0){best=mid;hi=mid;}else lo=mid;}
+    const saving=Math.max(0,D.btcMo-best);
+    result={
+      rows:[
+        {lbl:'Minimum DCA (base coverage)',from:'£'+D.btcMo+'/mo',to:'£'+best+'/mo',hi:true},
+        {lbl:'Monthly saving',from:'—',to:saving>0?'£'+saving+'/mo freed up':'Already at minimum'},
+        {lbl:'Annual saving',from:'—',to:saving>0?'£'+(saving*12).toLocaleString('en-GB')+'/yr':'—'},
+        {lbl:'Retirement age',from:'Age '+D.retireAge,to:'Age '+D.retireAge+' (unchanged)'},
+      ],
+      why:'Minimum DCA for base scenario coverage is £'+best+'/mo. '+(saving>0?'You could reduce from £'+D.btcMo+'/mo — saving £'+(saving*12).toLocaleString('en-GB')+'/yr.':'Your current DCA is already at or near the minimum.')
+    };
+  }
+  else if(optMode==='conservative'){
+    const bearAge=findEarliestRetirement(D,'bear');
+    const saving=bearAge?Math.max(0,D.retireAge-bearAge):0;
+    result={
+      rows:[
+        {lbl:'Bear-safe retirement age',from:'Age '+D.retireAge,to:bearAge?'Age '+bearAge:'Age 70+',hi:true},
+        {lbl:'Years gained (bear-safe)',from:'—',to:saving>0?saving+' year'+(saving>1?'s':'')+' earlier':'At or near bear-safe age'},
+        {lbl:'BTC scenario used',from:'—',to:'Bear ('+btcRates.bear+'% p.a.) — conservative'},
+        {lbl:'Risk level',from:'—',to:'Low — maximum downside protection'},
+      ],
+      why:'Bear-safe plan assumes only '+btcRates.bear+'% p.a. BTC growth. '+(bearAge?'Even in this scenario, retirement at '+bearAge+' looks achievable'+(saving>0?' — '+saving+' year'+(saving>1?'s':'')+' earlier than planned':'')+'.':'With current assets, bear-safe retirement by 70 isn\'t achievable. Consider increasing DCA or retirement age.')
+    };
+  }
+  else{
+    const baseAge=findEarliestRetirement(D,'base');
+    const saving=baseAge?Math.max(0,D.retireAge-baseAge):0;
+    const suggestDCA=D.btcMo<300?Math.min(D.btcMo+200,500):D.btcMo;
+    result={
+      rows:[
+        {lbl:'Suggested retirement age',from:'Age '+D.retireAge,to:baseAge&&saving>0?'Age '+baseAge:'Age '+D.retireAge,hi:true},
+        {lbl:'Suggested DCA',from:'£'+D.btcMo+'/mo',to:'£'+suggestDCA+'/mo'},
+        {lbl:'Years gained',from:'—',to:saving>0?saving+' year'+(saving>1?'s':'')+' earlier':'Well-optimised already'},
+        {lbl:'Risk level',from:'—',to:'Moderate (base scenario)'},
+      ],
+      why:'Balanced plan targets base scenario coverage. '+(saving>0?'Retiring at '+baseAge+' looks achievable — '+saving+' year'+(saving>1?'s':'')+' early. ':'Current plan is already well-balanced. ')+'Stress-test against bear for extra confidence.'
+    };
+  }
+
+  const optEl=document.getElementById('optResult');
+  optEl.innerHTML=result.rows.map(r=>
+    '<div class="opt-row">'+
+    '<span class="opt-lbl">'+r.lbl+'</span>'+
+    '<span class="opt-from">'+r.from+'</span>'+
+    '<span class="opt-to" style="'+(r.hi?'color:var(--green);font-size:16px;font-weight:700':'')+'">'+(typeof r.to==='number'?'Age '+r.to:r.to)+'</span>'+
+    '</div>'
+  ).join('')+'<div class="opt-why">'+result.why+'</div>';
+  optEl.style.display='block';
+  optEl.classList.add('show');
+}
+
+function importAndCalculate(){
+  const raw=document.getElementById('importJson').value.trim();
+  const errEl=document.getElementById('importErr');
+  const okEl=document.getElementById('importOk');
+  errEl.style.display='none'; okEl.style.display='none';
+  resetAllFields();
+    let p;
+  try{ p=JSON.parse(raw); } catch(e){ errEl.style.display='block'; return; }
+
+  // Reset all fields first to prevent stale values
+  resetAllFields();
+
+  const map={myAge:'myAge',retireAge:'retireAge',hhIncome:'hhIncome',spouseAge:'spouseAge',
+    myNI:'myNI',spouseNI:'spouseNI',myPension:'myPension',myPensionContrib:'myPensionContrib',
+    spousePension:'spousePension',spousePensionContrib:'spousePensionContrib',
+    btcCoins:'btcCoins',btcMonthly:'btcMonthly',btcPrice:'btcPrice',altcoins:'altcoins',
+    isaVal:'isaVal',isaContrib:'isaContrib',homeVal:'homeVal',mortgageVal:'mortgageVal',
+    investVal:'investVal',cashVal:'cashVal',targetIncome:'targetIncome',planUntil:'planUntil',
+    inflation:'inflation',statePensionAge:'statePensionAge',
+    rentalIncome:'rentalIncome',premBonds:'premBonds'};
+  Object.entries(map).forEach(([pk,fid])=>{ if(p[pk]!==undefined) sv(fid,p[pk]); });
+
+  if(p.hasSpouse!==undefined){
+    const pills=document.getElementById('pg-spouse').querySelectorAll('.pill');
+    if(p.hasSpouse){ pills[0].classList.remove('on'); pills[1].classList.add('on'); setSpouse(true); }
+    else{ pills[0].classList.add('on'); pills[1].classList.remove('on'); setSpouse(false); }
+  }
+  updBtcVal(); calcNI();
+  setTimeout(calc, 80);
+}
+
+function resetAllFields(){
+  const zeros=['myAge','retireAge','hhIncome','spouseAge','myNI','spouseNI',
+    'myPension','myPensionContrib','myPensionGrowth','spousePension','spousePensionContrib',
+    'btcCoins','btcMonthly','altcoins','isaVal','isaContrib','isaGrowth',
+    'homeVal','mortgageVal','rentalIncome','investVal','cashVal','premBonds','mySerps','spouseSerps'];
+  zeros.forEach(id=>{
+    const e=document.getElementById(id);
+    if(e){ e.value=''; e.setAttribute('value',''); }
+  });
+  sv('btcPrice',68000);sv('inflation',2.5);sv('statePensionAge',67);
+  sv('planUntil',90);sv('myPensionGrowth',5);sv('isaGrowth',7);
+  const pills=document.getElementById('pg-spouse').querySelectorAll('.pill');
+  pills[0].classList.add('on');pills[1].classList.remove('on');
+  setSpouse(false);
+  setEra('me','new');setEra('sp','new');
+  const b=document.getElementById('validationBanner');if(b)b.remove();
+}
+function toggleReadme(){
+  const p=document.getElementById('readmePanel');
+  const b=document.getElementById('readmeBtn');
+  const open=p.style.display==='none';
+  p.style.display=open?'block':'none';
+  b.textContent=open?'📖 JSON schema & reference ▲':'📖 JSON schema & reference ▼';
+}
+
+
+function loadJsonFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const parsed = JSON.parse(e.target.result);
+      // Prettify and display
+      document.getElementById('importJson').value = JSON.stringify(parsed, null, 2);
+      document.getElementById('importErr').style.display='none';
+      document.getElementById('importOk').style.display='none';
+      const jb=document.getElementById('importJumpBtn');if(jb)jb.style.display='none';
+      // Show loaded confirmation
+      const okEl=document.getElementById('importOk');
+      okEl.style.display='block';
+      okEl.textContent='📂 '+file.name+' loaded — hit Import & Calculate or review below';
+      const jb2=document.getElementById('importJumpBtn');
+      if(jb2) jb2.style.display='none'; // don't auto-show jump — let user review
+    } catch(err){
+      document.getElementById('importErr').style.display='block';
+      document.getElementById('importErr').textContent='⚠ Could not read file — is it a valid BitcoinSaveMe .json?';
+    }
+    // Reset file input so same file can be reloaded
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+function handleJsonDrop(event){
+  event.preventDefault();
+  event.target.style.borderColor='var(--border2)';
+  const file = event.dataTransfer.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const parsed = JSON.parse(e.target.result);
+      document.getElementById('importJson').value = JSON.stringify(parsed, null, 2);
+      document.getElementById('importErr').style.display='none';
+      const okEl=document.getElementById('importOk');
+      okEl.style.display='block';
+      okEl.textContent='📂 '+file.name+' dropped — hit Import & Calculate';
+    } catch(err){
+      document.getElementById('importErr').style.display='block';
+      document.getElementById('importErr').textContent='⚠ Could not read file — is it a valid BitcoinSaveMe .json?';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Auto-prettify JSON when pasted into the textarea
+document.addEventListener('DOMContentLoaded', function(){
+  const ta = document.getElementById('importJson');
+  if(ta){
+    ta.addEventListener('paste', function(e){
+      setTimeout(function(){
+        try{
+          const parsed = JSON.parse(ta.value);
+          ta.value = JSON.stringify(parsed, null, 2);
+        } catch(err){ /* not valid JSON yet, leave as-is */ }
+      }, 50);
+    });
+  }
+});
+
+function toggleDev(){
+  const p=document.getElementById('devPanel');
+  const b=document.getElementById('devToggleBtn');
+  const open=p.style.display==='none';
+  p.style.display=open?'block':'none';
+  b.style.color=open?'var(--btc)':'var(--text3)';
+  b.textContent=open?'🛠 dev tools ▲':'🛠 dev tools';
+}
+
+/* ══ INIT — FIX: call setMode on load ══ */
+setMode('simple');
+</script>
+</body>
+</html>
